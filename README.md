@@ -1,4 +1,4 @@
-# 🚀 ASTRA HUB — Универсальный хаб для Roblox
+# ✦ ASTRA HUB — Универсальный хаб для Roblox
 
 [![Version](https://img.shields.io/badge/version-2.0-purple)](https://github.com/Raphatlia/RingtaGUI)
 [![License](https://img.shields.io/badge/license-MIT-blue)](https://github.com/Raphatlia/RingtaGUI)
