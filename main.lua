@@ -1,19 +1,45 @@
--- Astra Hub (Ringta Edition) — С отдельными настройками
-local Settings = loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/Astra-Hub/main/settings.lua"))()
-
+-- Astra Hub (Ringta Edition) — ВСЁ В ОДНОМ
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
--- ===== ИСПОЛЬЗУЕМ НАСТРОЙКИ =====
+-- ============================================
+-- НАСТРОЙКИ (ПРЯМО В КОДЕ)
+-- ============================================
+local Config = {
+    Title = "✦ ASTRA HUB",
+    Icon = "rbxassetid://4483362458",
+    Theme = Color3.fromRGB(80, 40, 140),
+    ThemeName = "Фиолетовый",
+    Transparency = false,
+    TransparencyValue = 0.15,
+    Width = 420,
+    Height = 400,
+    SidebarWidth = 115,
+    Tabs = {"🏠 Home", "⚔️ Combat", "🌾 Farm", "⚙️ Settings"},
+    Themes = {
+        {"Фиолетовый", Color3.fromRGB(80, 40, 140)},
+        {"Красный", Color3.fromRGB(180, 40, 40)},
+        {"Синий", Color3.fromRGB(40, 80, 180)},
+        {"Зелёный", Color3.fromRGB(40, 180, 80)},
+        {"Оранжевый", Color3.fromRGB(180, 120, 40)},
+    },
+}
+
+-- ============================================
+-- СОХРАНЕНИЕ ПОЛЬЗОВАТЕЛЬСКИХ НАСТРОЕК
+-- ============================================
 getgenv().AstraSettings = getgenv().AstraSettings or {
-    Transparency = Settings.Transparency,
-    Theme = Settings.ThemeName
+    Transparency = Config.Transparency,
+    Theme = Config.ThemeName
 }
 local UserSettings = getgenv().AstraSettings
 
+-- ============================================
+-- GUI
+-- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AstraGUI"
 ScreenGui.Parent = CoreGui
@@ -24,11 +50,11 @@ local Icon = Instance.new("ImageButton")
 Icon.Size = UDim2.new(0, 45, 0, 45)
 Icon.Position = UDim2.new(0.02, 0, 0.02, 0)
 Icon.AnchorPoint = Vector2.new(0, 0)
-Icon.BackgroundColor3 = Settings.Theme
+Icon.BackgroundColor3 = Config.Theme
 Icon.BackgroundTransparency = 0.2
 Icon.BorderSizePixel = 2
-Icon.BorderColor3 = Settings.Theme
-Icon.Image = Settings.Icon
+Icon.BorderColor3 = Config.Theme
+Icon.Image = Config.Icon
 Icon.Parent = ScreenGui
 Icon.Visible = false
 
@@ -47,10 +73,10 @@ IconText.Parent = Icon
 
 -- ===== ОСНОВНОЕ ОКНО =====
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, Settings.Width, 0, Settings.Height)
-MainFrame.Position = UDim2.new(0.5, -Settings.Width/2, 0.5, -Settings.Height/2)
-MainFrame.BackgroundColor3 = Settings.Theme
-MainFrame.BackgroundTransparency = UserSettings.Transparency and Settings.TransparencyValue or 0
+MainFrame.Size = UDim2.new(0, Config.Width, 0, Config.Height)
+MainFrame.Position = UDim2.new(0.5, -Config.Width/2, 0.5, -Config.Height/2)
+MainFrame.BackgroundColor3 = Config.Theme
+MainFrame.BackgroundTransparency = UserSettings.Transparency and Config.TransparencyValue or 0
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Visible = true
@@ -71,7 +97,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0.4, 0, 1, 0)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = Settings.Title
+Title.Text = Config.Title
 Title.TextColor3 = Color3.fromRGB(210, 170, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
@@ -148,7 +174,7 @@ end)
 
 -- ===== САЙДБАР =====
 local LeftPanel = Instance.new("Frame")
-LeftPanel.Size = UDim2.new(0, Settings.SidebarWidth, 1, -45)
+LeftPanel.Size = UDim2.new(0, Config.SidebarWidth, 1, -45)
 LeftPanel.Position = UDim2.new(0, 0, 0, 45)
 LeftPanel.BackgroundColor3 = Color3.fromRGB(12, 12, 20)
 LeftPanel.BackgroundTransparency = 0.2
@@ -178,7 +204,7 @@ ProfileCorner.Parent = ProfileFrame
 local Avatar = Instance.new("Frame")
 Avatar.Size = UDim2.new(0, 28, 0, 28)
 Avatar.Position = UDim2.new(0.08, 0, 0.08, 0)
-Avatar.BackgroundColor3 = Settings.Theme
+Avatar.BackgroundColor3 = Config.Theme
 Avatar.BackgroundTransparency = 0.3
 Avatar.BorderSizePixel = 1
 Avatar.BorderColor3 = Color3.fromRGB(60, 60, 80)
@@ -219,20 +245,20 @@ Arrow.Font = Enum.Font.GothamBold
 Arrow.Parent = ProfileFrame
 
 -- ===== КНОПКИ =====
-local btnData = Settings.Tabs
+local btnData = Config.Tabs
 local btnObjects = {}
 
 for i = 1, #btnData do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.85, 0, 0, 30)
     btn.Position = UDim2.new(0.075, 0, 0, 8 + (i-1) * 36)
-    btn.BackgroundColor3 = (i == 1) and Settings.Theme or Color3.fromRGB(30, 30, 40)
+    btn.BackgroundColor3 = (i == 1) and Config.Theme or Color3.fromRGB(30, 30, 40)
     btn.Text = btnData[i]
     btn.TextColor3 = (i == 1) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 220)
     btn.TextSize = 14
     btn.Font = Enum.Font.Gotham
     btn.BorderSizePixel = 1
-    btn.BorderColor3 = (i == 1) and Settings.Theme or Color3.fromRGB(40, 40, 50)
+    btn.BorderColor3 = (i == 1) and Config.Theme or Color3.fromRGB(40, 40, 50)
     btn.Parent = LeftPanel
     
     local btnCorner = Instance.new("UICorner")
@@ -244,8 +270,8 @@ end
 
 -- ===== ПРАВАЯ ПАНЕЛЬ =====
 local RightPanel = Instance.new("Frame")
-RightPanel.Size = UDim2.new(1, -(Settings.SidebarWidth + 15), 1, -45)
-RightPanel.Position = UDim2.new(Settings.SidebarWidth + 5, 0, 0, 45)
+RightPanel.Size = UDim2.new(1, -(Config.SidebarWidth + 15), 1, -45)
+RightPanel.Position = UDim2.new(Config.SidebarWidth + 5, 0, 0, 45)
 RightPanel.BackgroundTransparency = 1
 RightPanel.Parent = MainFrame
 
@@ -338,7 +364,7 @@ transToggle.MouseButton1Click:Connect(function()
     UserSettings.Transparency = not UserSettings.Transparency
     transToggle.Text = UserSettings.Transparency and "ON" or "OFF"
     transToggle.BackgroundColor3 = UserSettings.Transparency and Color3.fromRGB(50, 150, 255) or Color3.fromRGB(40, 40, 60)
-    MainFrame.BackgroundTransparency = UserSettings.Transparency and Settings.TransparencyValue or 0
+    MainFrame.BackgroundTransparency = UserSettings.Transparency and Config.TransparencyValue or 0
 end)
 
 -- ===== ТЕМЫ =====
@@ -358,7 +384,7 @@ themeLabel.Font = Enum.Font.GothamBold
 themeLabel.TextXAlignment = Enum.TextXAlignment.Left
 themeLabel.Parent = themeFrame
 
-local themeColors = Settings.Themes
+local themeColors = Config.Themes
 local themeButtons = {}
 
 for i, data in pairs(themeColors) do
@@ -395,13 +421,13 @@ end
 
 settingsFrame.CanvasSize = UDim2.new(0, 0, 0, 220)
 
--- ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
+-- ===== ПЕРЕКЛЮЧЕНИЕ =====
 local function SwitchTab(index)
     for i, btn in pairs(btnObjects) do
         if i == index then
-            btn.BackgroundColor3 = Settings.Theme
+            btn.BackgroundColor3 = Config.Theme
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.BorderColor3 = Settings.Theme
+            btn.BorderColor3 = Config.Theme
         else
             btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
             btn.TextColor3 = Color3.fromRGB(200, 200, 220)
@@ -419,4 +445,4 @@ for i, btn in pairs(btnObjects) do
     end)
 end
 
-print("✦ Astra Hub (Ringta Edition) с отдельными настройками загружена!")
+print("✦ Astra Hub (Ringta Edition) загружена! (ВСЁ В ОДНОМ)")
