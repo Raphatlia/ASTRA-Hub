@@ -36,8 +36,8 @@
 
 ### 1. Загрузи скрипт через Delta
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/RingtaGUI/main/main.lua"))()
-RingtaGUI/
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/Astra-Hub/main/main.lua"))()
+✦ ASTRA HUB/
 ├── main.lua          # Основной скрипт
 ├── README.md         # Это описание
 └── LICENSE           # Лицензия (опционально)
