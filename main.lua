@@ -1,4 +1,4 @@
--- SpaceBerq | Ringta GUI v79 (Универсальная основа)
+-- SpaceBerq | Ringta GUI v80 (С настройками и темами)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
@@ -6,18 +6,18 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 -- ============================================
--- НАСТРОЙКИ (меняй под себя)
+-- НАСТРОЙКИ
 -- ============================================
 local Config = {
     Title = "RINGTA HUB",
     Icon = "rbxassetid://4483362458",
     Theme = Color3.fromRGB(80, 40, 140),
-    Glass = true,
+    Glass = false,
     Animations = true,
 }
 
 -- ============================================
--- ЭКРАН И ИКОНКА
+-- ГЛАВНЫЙ ЭКРАН
 -- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "RingtaGUI"
@@ -208,7 +208,7 @@ UserInputService.InputChanged:Connect(function(i)
 end)
 
 -- ============================================
--- САЙДБАР
+-- ЛЕВАЯ КОЛОНКА
 -- ============================================
 local LeftPanel = Instance.new("Frame")
 LeftPanel.Size = UDim2.new(0, 120, 1, -50)
@@ -271,8 +271,8 @@ Nickname.Font = Enum.Font.Gotham
 Nickname.TextXAlignment = Enum.TextXAlignment.Left
 Nickname.Parent = ProfileFrame
 
--- Кнопки навигации
-local btnData = {"🏠 Home", "⚔️ Combat", "🌾 Farm", "🔧 Misc"}
+-- ===== КНОПКИ (4 штуки) =====
+local btnData = {"🏠 Home", "⚔️ Combat", "🌾 Farm", "⚙️ Settings"}
 local btnObjects = {}
 
 for i, name in pairs(btnData) do
@@ -305,34 +305,286 @@ RightPanel.BackgroundTransparency = 1
 RightPanel.Parent = MainFrame
 
 -- ============================================
--- КОНТЕНТ ВКЛАДОК (пример)
+-- КОНТЕНТ ВКЛАДОК
 -- ============================================
 local allContents = {}
 
-for i, name in pairs(btnData) do
-    local content = Instance.new("ScrollingFrame")
-    content.Size = UDim2.new(1, 0, 1, 0)
-    content.BackgroundTransparency = 1
-    content.CanvasSize = UDim2.new(0, 0, 0, 0)
-    content.ScrollBarThickness = 4
-    content.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
-    content.Visible = (i == 1)
-    content.Parent = RightPanel
-    allContents[i] = content
+-- Home
+local HomeContent = Instance.new("ScrollingFrame")
+HomeContent.Size = UDim2.new(1, 0, 1, 0)
+HomeContent.BackgroundTransparency = 1
+HomeContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+HomeContent.ScrollBarThickness = 4
+HomeContent.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
+HomeContent.Visible = true
+HomeContent.Parent = RightPanel
+allContents[1] = HomeContent
+
+local infoCard = Instance.new("Frame")
+infoCard.Size = UDim2.new(0.9, 0, 0, 36)
+infoCard.Position = UDim2.new(0.05, 0, 0, 12)
+infoCard.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+infoCard.BackgroundTransparency = 0.2
+infoCard.BorderSizePixel = 1
+infoCard.BorderColor3 = Color3.fromRGB(50, 50, 60)
+infoCard.Parent = HomeContent
+
+local infoCorner = Instance.new("UICorner")
+infoCorner.CornerRadius = UDim.new(0, 8)
+infoCorner.Parent = infoCard
+
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, 0, 1, 0)
+infoLabel.BackgroundTransparency = 1
+infoLabel.Text = "💎 " .. Config.Title .. " v2.0 | SpaceBerq"
+infoLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+infoLabel.TextSize = 13
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextXAlignment = Enum.TextXAlignment.Center
+infoLabel.Parent = infoCard
+
+local discordCard = Instance.new("Frame")
+discordCard.Size = UDim2.new(0.9, 0, 0, 36)
+discordCard.Position = UDim2.new(0.05, 0, 0, 56)
+discordCard.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+discordCard.BackgroundTransparency = 0.2
+discordCard.BorderSizePixel = 1
+discordCard.BorderColor3 = Color3.fromRGB(50, 50, 60)
+discordCard.Parent = HomeContent
+
+local discordCorner = Instance.new("UICorner")
+discordCorner.CornerRadius = UDim.new(0, 8)
+discordCorner.Parent = discordCard
+
+local discordLabel = Instance.new("TextLabel")
+discordLabel.Size = UDim2.new(0.6, 0, 1, 0)
+discordLabel.Position = UDim2.new(0, 12, 0, 0)
+discordLabel.BackgroundTransparency = 1
+discordLabel.Text = "💬 Discord"
+discordLabel.TextColor3 = Color3.fromRGB(240, 240, 255)
+discordLabel.TextSize = 13
+discordLabel.Font = Enum.Font.GothamBold
+discordLabel.TextXAlignment = Enum.TextXAlignment.Left
+discordLabel.Parent = discordCard
+
+local dcBtn = Instance.new("TextButton")
+dcBtn.Size = UDim2.new(0, 55, 0, 24)
+dcBtn.Position = UDim2.new(0.7, 0, 0.06, 0)
+dcBtn.BackgroundColor3 = Config.Theme
+dcBtn.BackgroundTransparency = 0.2
+dcBtn.Text = "Перейти"
+dcBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+dcBtn.TextSize = 12
+dcBtn.Font = Enum.Font.GothamBold
+dcBtn.BorderSizePixel = 1
+dcBtn.BorderColor3 = Config.Theme
+dcBtn.Parent = discordCard
+
+local dcBtnCorner = Instance.new("UICorner")
+dcBtnCorner.CornerRadius = UDim.new(0, 6)
+dcBtnCorner.Parent = dcBtn
+
+dcBtn.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/ringta")
+end)
+
+HomeContent.CanvasSize = UDim2.new(0, 0, 0, 110)
+
+-- Combat
+local CombatContent = Instance.new("ScrollingFrame")
+CombatContent.Size = UDim2.new(1, 0, 1, 0)
+CombatContent.BackgroundTransparency = 1
+CombatContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+CombatContent.ScrollBarThickness = 4
+CombatContent.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
+CombatContent.Visible = false
+CombatContent.Parent = RightPanel
+allContents[2] = CombatContent
+
+local combatLabel = Instance.new("TextLabel")
+combatLabel.Size = UDim2.new(1, 0, 0, 40)
+combatLabel.Position = UDim2.new(0, 0, 0.2, 0)
+combatLabel.BackgroundTransparency = 1
+combatLabel.Text = "⚔️ Combat"
+combatLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+combatLabel.TextSize = 18
+combatLabel.Font = Enum.Font.GothamBold
+combatLabel.TextXAlignment = Enum.TextXAlignment.Center
+combatLabel.Parent = CombatContent
+CombatContent.CanvasSize = UDim2.new(0, 0, 0, 100)
+
+-- Farm
+local FarmContent = Instance.new("ScrollingFrame")
+FarmContent.Size = UDim2.new(1, 0, 1, 0)
+FarmContent.BackgroundTransparency = 1
+FarmContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+FarmContent.ScrollBarThickness = 4
+FarmContent.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
+FarmContent.Visible = false
+FarmContent.Parent = RightPanel
+allContents[3] = FarmContent
+
+local farmLabel = Instance.new("TextLabel")
+farmLabel.Size = UDim2.new(1, 0, 0, 40)
+farmLabel.Position = UDim2.new(0, 0, 0.2, 0)
+farmLabel.BackgroundTransparency = 1
+farmLabel.Text = "🌾 Farm"
+farmLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+farmLabel.TextSize = 18
+farmLabel.Font = Enum.Font.GothamBold
+farmLabel.TextXAlignment = Enum.TextXAlignment.Center
+farmLabel.Parent = FarmContent
+FarmContent.CanvasSize = UDim2.new(0, 0, 0, 100)
+
+-- ============================================
+-- SETTINGS (НАСТРОЙКИ)
+-- ============================================
+local SettingsContent = Instance.new("ScrollingFrame")
+SettingsContent.Size = UDim2.new(1, 0, 1, 0)
+SettingsContent.BackgroundTransparency = 1
+SettingsContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+SettingsContent.ScrollBarThickness = 4
+SettingsContent.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
+SettingsContent.Visible = false
+SettingsContent.Parent = RightPanel
+allContents[4] = SettingsContent
+
+-- Theme (выпадающий список)
+local themeFrame = Instance.new("Frame")
+themeFrame.Size = UDim2.new(0.9, 0, 0, 80)
+themeFrame.Position = UDim2.new(0.05, 0, 0, 12)
+themeFrame.BackgroundTransparency = 1
+themeFrame.Parent = SettingsContent
+
+local themeLabel = Instance.new("TextLabel")
+themeLabel.Size = UDim2.new(1, 0, 0, 30)
+themeLabel.BackgroundTransparency = 1
+themeLabel.Text = "🎨 Theme"
+themeLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+themeLabel.TextSize = 14
+themeLabel.Font = Enum.Font.GothamBold
+themeLabel.TextXAlignment = Enum.TextXAlignment.Left
+themeLabel.Parent = themeFrame
+
+local themeBtn = Instance.new("TextButton")
+themeBtn.Size = UDim2.new(1, 0, 0, 40)
+themeBtn.Position = UDim2.new(0, 0, 0, 35)
+themeBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+themeBtn.BackgroundTransparency = 0.2
+themeBtn.Text = "Фиолетовый ▼"
+themeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+themeBtn.TextSize = 14
+themeBtn.Font = Enum.Font.Gotham
+themeBtn.BorderSizePixel = 1
+themeBtn.BorderColor3 = Color3.fromRGB(50, 50, 60)
+themeBtn.Parent = themeFrame
+
+local themeBtnCorner = Instance.new("UICorner")
+themeBtnCorner.CornerRadius = UDim.new(0, 6)
+themeBtnCorner.Parent = themeBtn
+
+local themeList = Instance.new("Frame")
+themeList.Size = UDim2.new(1, 0, 0, 0)
+themeList.Position = UDim2.new(0, 0, 1, 0)
+themeList.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+themeList.BackgroundTransparency = 0.2
+themeList.ClipsDescendants = true
+themeList.Parent = themeBtn
+
+local themes = {
+    {"Фиолетовый", Color3.fromRGB(80, 40, 140)},
+    {"Красный", Color3.fromRGB(180, 40, 40)},
+    {"Синий", Color3.fromRGB(40, 80, 180)},
+    {"Зелёный", Color3.fromRGB(40, 180, 80)},
+    {"Оранжевый", Color3.fromRGB(180, 120, 40)},
+}
+local yPos = 0
+for i, theme in pairs(themes) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 32)
+    btn.Position = UDim2.new(0, 0, 0, yPos)
+    btn.BackgroundTransparency = 1
+    btn.Text = theme[1]
+    btn.TextColor3 = Color3.fromRGB(200, 200, 220)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.Gotham
+    btn.Parent = themeList
     
-    -- Заполняем контент примерами
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 40)
-    label.Position = UDim2.new(0, 0, 0.2, 0)
-    label.BackgroundTransparency = 1
-    label.Text = "📁 " .. name:gsub("🏠 |⚔️ |🌾 |🔧 ", "")
-    label.TextColor3 = Color3.fromRGB(200, 200, 220)
-    label.TextSize = 18
-    label.Font = Enum.Font.GothamBold
-    label.TextXAlignment = Enum.TextXAlignment.Center
-    label.Parent = content
-    content.CanvasSize = UDim2.new(0, 0, 0, 100)
+    btn.MouseButton1Click:Connect(function()
+        themeBtn.Text = theme[1] .. " ▼"
+        themeList.Size = UDim2.new(1, 0, 0, 0)
+        MainFrame.BackgroundColor3 = theme[2]
+        Config.Theme = theme[2]
+        for _, b in pairs(btnObjects) do
+            if b.BackgroundColor3 == Color3.fromRGB(80, 40, 140) then
+                b.BackgroundColor3 = theme[2]
+                b.BorderColor3 = theme[2]
+            end
+        end
+        Avatar.BackgroundColor3 = theme[2]
+        dcBtn.BackgroundColor3 = theme[2]
+        dcBtn.BorderColor3 = theme[2]
+    end)
+    yPos = yPos + 32
 end
+
+themeBtn.MouseButton1Click:Connect(function()
+    if themeList.Size.Y.Offset == 0 then
+        themeList.Size = UDim2.new(1, 0, 0, #themes * 32)
+    else
+        themeList.Size = UDim2.new(1, 0, 0, 0)
+    end
+end)
+
+-- Transparency (переключатель)
+local transFrame = Instance.new("Frame")
+transFrame.Size = UDim2.new(0.9, 0, 0, 60)
+transFrame.Position = UDim2.new(0.05, 0, 0, 110)
+transFrame.BackgroundTransparency = 1
+transFrame.Parent = SettingsContent
+
+local transLabel = Instance.new("TextLabel")
+transLabel.Size = UDim2.new(0.7, 0, 0, 30)
+transLabel.BackgroundTransparency = 1
+transLabel.Text = "🪟 Transparency"
+transLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+transLabel.TextSize = 14
+transLabel.Font = Enum.Font.GothamBold
+transLabel.TextXAlignment = Enum.TextXAlignment.Left
+transLabel.Parent = transFrame
+
+local transToggle = Instance.new("TextButton")
+transToggle.Size = UDim2.new(0.2, 0, 0, 30)
+transToggle.Position = UDim2.new(0.7, 0, 0, 0)
+transToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+transToggle.BackgroundTransparency = 0.2
+transToggle.Text = "OFF"
+transToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+transToggle.TextSize = 14
+transToggle.Font = Enum.Font.GothamBold
+transToggle.BorderSizePixel = 1
+transToggle.BorderColor3 = Color3.fromRGB(50, 50, 60)
+transToggle.Parent = transFrame
+
+local transBtnCorner = Instance.new("UICorner")
+transBtnCorner.CornerRadius = UDim.new(0, 6)
+transBtnCorner.Parent = transToggle
+
+local isTransparent = false
+transToggle.MouseButton1Click:Connect(function()
+    isTransparent = not isTransparent
+    if isTransparent then
+        transToggle.Text = "ON"
+        transToggle.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+        MainFrame.BackgroundTransparency = 0.3
+    else
+        transToggle.Text = "OFF"
+        transToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+        MainFrame.BackgroundTransparency = 0
+    end
+end)
+
+SettingsContent.CanvasSize = UDim2.new(0, 0, 0, 200)
 
 -- ============================================
 -- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
@@ -360,4 +612,4 @@ for i, btn in pairs(btnObjects) do
     end)
 end
 
-print("Ringta GUI v79 загружена! Готовая универсальная основа.")
+print("Ringta GUI v80 загружена! С настройками и темами.")
