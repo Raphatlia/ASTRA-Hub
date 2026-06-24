@@ -1,13 +1,24 @@
 -- Astra Hub | Настройки
 local Settings = {
+    -- Основное
     Title = "✦ ASTRA HUB",
     Icon = "rbxassetid://4483362458",
     Theme = Color3.fromRGB(80, 40, 140),
-    Glass = true,
-    Animations = true,
-    Width = 400,
+    ThemeName = "Фиолетовый",
+    
+    -- Визуал
+    Transparency = false,
+    TransparencyValue = 0.15,
+    
+    -- Размеры
+    Width = 420,
     Height = 400,
+    SidebarWidth = 115,
+    
+    -- Вкладки
     Tabs = {"🏠 Home", "⚔️ Combat", "🌾 Farm", "⚙️ Settings"},
+    
+    -- Темы
     Themes = {
         {"Фиолетовый", Color3.fromRGB(80, 40, 140)},
         {"Красный", Color3.fromRGB(180, 40, 40)},
@@ -16,4 +27,5 @@ local Settings = {
         {"Оранжевый", Color3.fromRGB(180, 120, 40)},
     },
 }
+
 return Settings
