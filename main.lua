@@ -1,72 +1,18 @@
--- Astra Hub (Ringta Edition) — ПОЛНАЯ ВЕРСИЯ
+-- Astra Hub (Ringta Edition) — ФИНАЛЬНАЯ ВЕРСИЯ
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
--- ============================================
--- НАСТРОЙКИ (ПРЯМО В КОДЕ)
--- ============================================
-local Config = {
-    Title = "✦ ASTRA HUB",
-    Icon = "rbxassetid://4483362458",
-    Theme = Color3.fromRGB(80, 40, 140),
-    ThemeName = "Фиолетовый",
-    Transparency = false,
-    TransparencyValue = 0.15,
-    Width = 420,
-    Height = 400,
-    SidebarWidth = 115,
-    Tabs = {"🏠 Home", "⚔️ Combat", "🌾 Farm", "⚙️ Settings"},
-    Themes = {
-        {"Фиолетовый", Color3.fromRGB(80, 40, 140)},
-        {"Красный", Color3.fromRGB(180, 40, 40)},
-        {"Синий", Color3.fromRGB(40, 80, 180)},
-        {"Зелёный", Color3.fromRGB(40, 180, 80)},
-        {"Оранжевый", Color3.fromRGB(180, 120, 40)},
-    },
-}
-
--- ============================================
--- GUI
--- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AstraGUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- ===== ИКОНКА =====
-local Icon = Instance.new("ImageButton")
-Icon.Size = UDim2.new(0, 45, 0, 45)
-Icon.Position = UDim2.new(0.02, 0, 0.02, 0)
-Icon.AnchorPoint = Vector2.new(0, 0)
-Icon.BackgroundColor3 = Config.Theme
-Icon.BackgroundTransparency = 0.2
-Icon.BorderSizePixel = 2
-Icon.BorderColor3 = Config.Theme
-Icon.Image = Config.Icon
-Icon.Parent = ScreenGui
-Icon.Visible = false
-
-local IconCorner = Instance.new("UICorner")
-IconCorner.CornerRadius = UDim.new(0, 12)
-IconCorner.Parent = Icon
-
-local IconText = Instance.new("TextLabel")
-IconText.Size = UDim2.new(1, 0, 1, 0)
-IconText.BackgroundTransparency = 1
-IconText.Text = "✦"
-IconText.TextColor3 = Color3.fromRGB(255, 255, 255)
-IconText.TextSize = 24
-IconText.Font = Enum.Font.GothamBold
-IconText.Parent = Icon
-
--- ===== ОСНОВНОЕ ОКНО =====
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, Config.Width, 0, Config.Height)
-MainFrame.Position = UDim2.new(0.5, -Config.Width/2, 0.5, -Config.Height/2)
-MainFrame.BackgroundColor3 = Config.Theme
+MainFrame.Size = UDim2.new(0, 420, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
 MainFrame.BackgroundTransparency = 0
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -77,7 +23,6 @@ local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 16)
 Corner.Parent = MainFrame
 
--- ===== ШАПКА =====
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 45)
 Header.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
@@ -88,62 +33,31 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(0.4, 0, 1, 0)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = Config.Title
+Title.Text = "✦ ASTRA HUB"
 Title.TextColor3 = Color3.fromRGB(210, 170, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = Header
 
--- ===== MACOS КНОПКИ =====
-local MacOSContainer = Instance.new("Frame")
-MacOSContainer.Size = UDim2.new(0, 55, 0, 18)
-MacOSContainer.Position = UDim2.new(1, -63, 0, 13)
-MacOSContainer.BackgroundTransparency = 1
-MacOSContainer.Parent = Header
-
-local function MakeMacOSButton(color, x)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 13, 0, 13)
-    btn.Position = UDim2.new(0, x, 0, 2)
-    btn.BackgroundColor3 = color
-    btn.BorderSizePixel = 0
-    btn.Text = ""
-    btn.Parent = MacOSContainer
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = btn
-    return btn
-end
-
-local RedBtn = MakeMacOSButton(Color3.fromRGB(255, 95, 87), 0)
-local YellowBtn = MakeMacOSButton(Color3.fromRGB(254, 188, 46), 20)
-local GreenBtn = MakeMacOSButton(Color3.fromRGB(40, 200, 64), 40)
-
-local contentVisible = true
-local isPinned = false
-
-RedBtn.MouseButton1Click:Connect(function()
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 8)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(200, 70, 70)
+CloseBtn.TextSize = 18
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Parent = Title
+CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
-YellowBtn.MouseButton1Click:Connect(function()
-    contentVisible = not contentVisible
-    if LeftPanel then LeftPanel.Visible = contentVisible end
-    if RightPanel then RightPanel.Visible = contentVisible end
-end)
-
-GreenBtn.MouseButton1Click:Connect(function()
-    isPinned = not isPinned
-    GreenBtn.BackgroundColor3 = isPinned and Color3.fromRGB(20, 180, 40) or Color3.fromRGB(40, 200, 64)
-end)
-
--- ===== ПЕРЕТАСКИВАНИЕ =====
 local dragging = false
 local dragStart, startPos
 
 Header.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 and not isPinned then
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = i.Position
         startPos = MainFrame.Position
@@ -163,9 +77,8 @@ UserInputService.InputChanged:Connect(function(i)
     end
 end)
 
--- ===== САЙДБАР =====
 local LeftPanel = Instance.new("Frame")
-LeftPanel.Size = UDim2.new(0, Config.SidebarWidth, 1, -45)
+LeftPanel.Size = UDim2.new(0, 115, 1, -45)
 LeftPanel.Position = UDim2.new(0, 0, 0, 45)
 LeftPanel.BackgroundColor3 = Color3.fromRGB(12, 12, 20)
 LeftPanel.BackgroundTransparency = 0.2
@@ -178,7 +91,6 @@ Border.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
 Border.BackgroundTransparency = 0.4
 Border.Parent = LeftPanel
 
--- ===== ПРОФИЛЬ =====
 local ProfileFrame = Instance.new("Frame")
 ProfileFrame.Size = UDim2.new(0.9, 0, 0, 45)
 ProfileFrame.Position = UDim2.new(0.05, 0, 1, -50)
@@ -195,7 +107,7 @@ ProfileCorner.Parent = ProfileFrame
 local Avatar = Instance.new("Frame")
 Avatar.Size = UDim2.new(0, 28, 0, 28)
 Avatar.Position = UDim2.new(0.08, 0, 0.08, 0)
-Avatar.BackgroundColor3 = Config.Theme
+Avatar.BackgroundColor3 = Color3.fromRGB(80, 40, 140)
 Avatar.BackgroundTransparency = 0.3
 Avatar.BorderSizePixel = 1
 Avatar.BorderColor3 = Color3.fromRGB(60, 60, 80)
@@ -235,21 +147,20 @@ Arrow.TextSize = 16
 Arrow.Font = Enum.Font.GothamBold
 Arrow.Parent = ProfileFrame
 
--- ===== КНОПКИ =====
-local btnData = Config.Tabs
+local btnData = {"🏠 Home", "⚔️ Combat", "🌾 Farm", "⚙️ Settings"}
 local btnObjects = {}
 
 for i = 1, #btnData do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.85, 0, 0, 30)
     btn.Position = UDim2.new(0.075, 0, 0, 8 + (i-1) * 36)
-    btn.BackgroundColor3 = (i == 1) and Config.Theme or Color3.fromRGB(30, 30, 40)
+    btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(80, 40, 140) or Color3.fromRGB(30, 30, 40)
     btn.Text = btnData[i]
     btn.TextColor3 = (i == 1) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 220)
     btn.TextSize = 14
     btn.Font = Enum.Font.Gotham
     btn.BorderSizePixel = 1
-    btn.BorderColor3 = (i == 1) and Config.Theme or Color3.fromRGB(40, 40, 50)
+    btn.BorderColor3 = (i == 1) and Color3.fromRGB(80, 40, 140) or Color3.fromRGB(40, 40, 50)
     btn.Parent = LeftPanel
     
     local btnCorner = Instance.new("UICorner")
@@ -259,51 +170,40 @@ for i = 1, #btnData do
     btnObjects[i] = btn
 end
 
--- ===== ПРАВАЯ ПАНЕЛЬ =====
 local RightPanel = Instance.new("Frame")
-RightPanel.Size = UDim2.new(1, -(Config.SidebarWidth + 15), 1, -45)
-RightPanel.Position = UDim2.new(Config.SidebarWidth + 5, 0, 0, 45)
+RightPanel.Size = UDim2.new(1, -130, 1, -45)
+RightPanel.Position = UDim2.new(0, 120, 0, 45)
 RightPanel.BackgroundTransparency = 1
 RightPanel.Parent = MainFrame
 
--- ===== КОНТЕНТ =====
-local allContents = {}
+local contents = {}
 
-local function CreateContent(name)
+for i = 1, #btnData do
     local f = Instance.new("ScrollingFrame")
     f.Size = UDim2.new(1, 0, 1, 0)
     f.BackgroundTransparency = 1
     f.CanvasSize = UDim2.new(0, 0, 0, 0)
     f.ScrollBarThickness = 4
     f.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
-    f.Visible = false
+    f.Visible = (i == 1)
     f.Parent = RightPanel
     
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 0, 40)
     label.Position = UDim2.new(0, 0, 0.2, 0)
     label.BackgroundTransparency = 1
-    label.Text = "📁 " .. name
+    label.Text = "📁 " .. btnData[i]
     label.TextColor3 = Color3.fromRGB(200, 200, 220)
     label.TextSize = 18
     label.Font = Enum.Font.GothamBold
     label.TextXAlignment = Enum.TextXAlignment.Center
     label.Parent = f
     f.CanvasSize = UDim2.new(0, 0, 0, 100)
-    return f
+    contents[i] = f
 end
 
-local homeContent = CreateContent("Home")
-local combatContent = CreateContent("Combat")
-local farmContent = CreateContent("Farm")
-local settingsContent = CreateContent("Settings")
-
-homeContent.Visible = true
-allContents = {homeContent, combatContent, farmContent, settingsContent}
-
--- ===== НАСТРОЙКИ В SETTINGS =====
-local settingsFrame = settingsContent
-settingsFrame.CanvasSize = UDim2.new(0, 0, 0, 300)
+local settingsContent = contents[4]
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 300)
 
 local settingsLabel = Instance.new("TextLabel")
 settingsLabel.Size = UDim2.new(1, 0, 0, 40)
@@ -314,14 +214,14 @@ settingsLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
 settingsLabel.TextSize = 18
 settingsLabel.Font = Enum.Font.GothamBold
 settingsLabel.TextXAlignment = Enum.TextXAlignment.Center
-settingsLabel.Parent = settingsFrame
+settingsLabel.Parent = settingsContent
 
--- ===== ПРОЗРАЧНОСТЬ =====
+-- Прозрачность
 local transFrame = Instance.new("Frame")
 transFrame.Size = UDim2.new(0.9, 0, 0, 60)
 transFrame.Position = UDim2.new(0.05, 0, 0, 50)
 transFrame.BackgroundTransparency = 1
-transFrame.Parent = settingsFrame
+transFrame.Parent = settingsContent
 
 local transLabel = Instance.new("TextLabel")
 transLabel.Size = UDim2.new(0.6, 0, 0, 30)
@@ -359,12 +259,12 @@ transToggle.MouseButton1Click:Connect(function()
     MainFrame.BackgroundTransparency = isTransparent and 0.15 or 0
 end)
 
--- ===== ТЕМЫ =====
+-- Темы
 local themeFrame = Instance.new("Frame")
 themeFrame.Size = UDim2.new(0.9, 0, 0, 80)
 themeFrame.Position = UDim2.new(0.05, 0, 0, 120)
 themeFrame.BackgroundTransparency = 1
-themeFrame.Parent = settingsFrame
+themeFrame.Parent = settingsContent
 
 local themeLabel = Instance.new("TextLabel")
 themeLabel.Size = UDim2.new(1, 0, 0, 30)
@@ -377,13 +277,12 @@ themeLabel.TextXAlignment = Enum.TextXAlignment.Left
 themeLabel.Parent = themeFrame
 
 local themeColors = {
-    {"Фиолетовый", Color3.fromRGB(80, 40, 140)},
-    {"Красный", Color3.fromRGB(180, 40, 40)},
-    {"Синий", Color3.fromRGB(40, 80, 180)},
-    {"Зелёный", Color3.fromRGB(40, 180, 80)},
-    {"Оранжевый", Color3.fromRGB(180, 120, 40)},
+    {"Фиолет", Color3.fromRGB(80, 40, 140)},
+    {"Красн", Color3.fromRGB(180, 40, 40)},
+    {"Син", Color3.fromRGB(40, 80, 180)},
 }
 
+local themeButtons = {}
 for i, data in pairs(themeColors) do
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.17, 0, 0, 30)
@@ -404,25 +303,32 @@ for i, data in pairs(themeColors) do
     
     btn.MouseButton1Click:Connect(function()
         MainFrame.BackgroundColor3 = data[2]
+        for _, b in pairs(themeButtons) do
+            b.BorderSizePixel = 1
+            b.BorderColor3 = Color3.fromRGB(50, 50, 60)
+        end
+        btn.BorderSizePixel = 2
+        btn.BorderColor3 = Color3.fromRGB(255, 255, 255)
     end)
+    
+    table.insert(themeButtons, btn)
 end
 
-settingsFrame.CanvasSize = UDim2.new(0, 0, 0, 220)
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 250)
 
--- ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
 local function SwitchTab(index)
     for i, btn in pairs(btnObjects) do
         if i == index then
-            btn.BackgroundColor3 = Config.Theme
+            btn.BackgroundColor3 = Color3.fromRGB(80, 40, 140)
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.BorderColor3 = Config.Theme
+            btn.BorderColor3 = Color3.fromRGB(80, 40, 140)
         else
             btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
             btn.TextColor3 = Color3.fromRGB(200, 200, 220)
             btn.BorderColor3 = Color3.fromRGB(40, 40, 50)
         end
     end
-    for i, content in pairs(allContents) do
+    for i, content in pairs(contents) do
         content.Visible = (i == index)
     end
 end
@@ -433,4 +339,4 @@ for i, btn in pairs(btnObjects) do
     end)
 end
 
-print("✦ Astra Hub (Ringta Edition) загружена!")
+print("✦ Astra Hub загружена!")
