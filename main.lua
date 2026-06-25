@@ -1,251 +1,295 @@
--- Astra Hub (Ringta Edition) — ФИНАЛЬНАЯ ВЕРСИЯ
+-- ASTRA HUB — ПЕРЕТАСКИВАНИЕ ПО ВСЕЙ РАМКЕ
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
-local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AstraGUI"
-ScreenGui.Parent = CoreGui
+ScreenGui.Parent = LP:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 -- ===== ОСНОВНОЕ ОКНО =====
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 420, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -210, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
-MainFrame.BackgroundTransparency = 0
-MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Visible = true
-MainFrame.Parent = ScreenGui
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 380, 0, 320)
+mainFrame.Position = UDim2.new(0.5, -190, 0.5, -160)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+mainFrame.BackgroundTransparency = 0
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+mainFrame.Visible = true
+mainFrame.Parent = ScreenGui
 
-local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, 16)
-Corner.Parent = MainFrame
-
--- ===== КРУГЛАЯ ПЛАВАЮЩАЯ ИКОНКА =====
-local Icon = Instance.new("ImageButton")
-Icon.Size = UDim2.new(0, 50, 0, 50)
-Icon.Position = UDim2.new(0.02, 0, 0.02, 0)
-Icon.AnchorPoint = Vector2.new(0, 0)
-Icon.BackgroundColor3 = Color3.fromRGB(80, 40, 140)
-Icon.BackgroundTransparency = 0.2
-Icon.BorderSizePixel = 2
-Icon.BorderColor3 = Color3.fromRGB(138, 43, 226)
-Icon.Image = "rbxassetid://4483362458"
-Icon.Parent = ScreenGui
-Icon.Visible = false
-
--- ЗАКРУГЛЕНИЕ ИКОНКИ (круглая)
-local IconCorner = Instance.new("UICorner")
-IconCorner.CornerRadius = UDim.new(1, 0)
-IconCorner.Parent = Icon
-
--- Неоновая обводка (свечение)
-local NeonGlow = Instance.new("Frame")
-NeonGlow.Size = UDim2.new(1, 10, 1, 10)
-NeonGlow.Position = UDim2.new(0, -5, 0, -5)
-NeonGlow.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-NeonGlow.BackgroundTransparency = 0.85
-NeonGlow.BorderSizePixel = 0
-NeonGlow.Parent = Icon
-
-local IconText = Instance.new("TextLabel")
-IconText.Size = UDim2.new(1, 0, 1, 0)
-IconText.BackgroundTransparency = 1
-IconText.Text = "✦"
-IconText.TextColor3 = Color3.fromRGB(255, 255, 255)
-IconText.TextSize = 24
-IconText.Font = Enum.Font.GothamBold
-IconText.Parent = Icon
-
-Icon.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    Icon.Visible = false
-end)
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 14)
+mainCorner.Parent = mainFrame
 
 -- ===== ШАПКА =====
-local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1, 0, 0, 45)
-Header.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
-Header.BackgroundTransparency = 0.2
-Header.Parent = MainFrame
+local header = Instance.new("Frame")
+header.Size = UDim2.new(1, 0, 0, 40)
+header.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+header.BackgroundTransparency = 0.2
+header.Parent = mainFrame
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(0.4, 0, 1, 0)
-Title.Position = UDim2.new(0.05, 0, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "✦ ASTRA HUB"
-Title.TextColor3 = Color3.fromRGB(210, 170, 255)
-Title.TextSize = 16
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = Header
+local headerCorner = Instance.new("UICorner")
+headerCorner.CornerRadius = UDim.new(0, 14)
+headerCorner.Parent = header
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0.5, 0, 1, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "✦ ASTRA HUB"
+title.TextColor3 = Color3.fromRGB(210, 170, 255)
+title.TextSize = 16
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = header
 
 -- ===== MACOS КНОПКИ =====
-local MacOSContainer = Instance.new("Frame")
-MacOSContainer.Size = UDim2.new(0, 55, 0, 18)
-MacOSContainer.Position = UDim2.new(1, -63, 0, 13)
-MacOSContainer.BackgroundTransparency = 1
-MacOSContainer.Parent = Header
+local btnRed = Instance.new("TextButton")
+btnRed.Size = UDim2.new(0, 12, 0, 12)
+btnRed.Position = UDim2.new(1, -55, 0.5, 0)
+btnRed.AnchorPoint = Vector2.new(0, 0.5)
+btnRed.BackgroundColor3 = Color3.fromRGB(255, 69, 58)
+btnRed.BorderSizePixel = 0
+btnRed.Text = ""
+btnRed.Parent = header
 
-local function MakeMacOSButton(color, x)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 13, 0, 13)
-    btn.Position = UDim2.new(0, x, 0, 2)
-    btn.BackgroundColor3 = color
-    btn.BorderSizePixel = 0
-    btn.Text = ""
-    btn.Parent = MacOSContainer
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = btn
-    return btn
-end
+local btnRedCorner = Instance.new("UICorner")
+btnRedCorner.CornerRadius = UDim.new(1, 0)
+btnRedCorner.Parent = btnRed
 
-local RedBtn = MakeMacOSButton(Color3.fromRGB(255, 95, 87), 0)
-local YellowBtn = MakeMacOSButton(Color3.fromRGB(254, 188, 46), 20)
-local GreenBtn = MakeMacOSButton(Color3.fromRGB(40, 200, 64), 40)
+local btnYellow = Instance.new("TextButton")
+btnYellow.Size = UDim2.new(0, 12, 0, 12)
+btnYellow.Position = UDim2.new(1, -37, 0.5, 0)
+btnYellow.AnchorPoint = Vector2.new(0, 0.5)
+btnYellow.BackgroundColor3 = Color3.fromRGB(255, 189, 46)
+btnYellow.BorderSizePixel = 0
+btnYellow.Text = ""
+btnYellow.Parent = header
 
--- Красная — полностью скрыть всё
-RedBtn.MouseButton1Click:Connect(function()
+local btnYellowCorner = Instance.new("UICorner")
+btnYellowCorner.CornerRadius = UDim.new(1, 0)
+btnYellowCorner.Parent = btnYellow
+
+local btnGreen = Instance.new("TextButton")
+btnGreen.Size = UDim2.new(0, 12, 0, 12)
+btnGreen.Position = UDim2.new(1, -19, 0.5, 0)
+btnGreen.AnchorPoint = Vector2.new(0, 0.5)
+btnGreen.BackgroundColor3 = Color3.fromRGB(50, 215, 75)
+btnGreen.BorderSizePixel = 0
+btnGreen.Text = ""
+btnGreen.Parent = header
+
+local btnGreenCorner = Instance.new("UICorner")
+btnGreenCorner.CornerRadius = UDim.new(1, 0)
+btnGreenCorner.Parent = btnGreen
+
+-- ===== ПЛАВАЮЩАЯ ИКОНКА =====
+local iconFrame = Instance.new("ImageButton")
+iconFrame.Size = UDim2.new(0, 45, 0, 45)
+iconFrame.Position = UDim2.new(0.02, 0, 0.02, 0)
+iconFrame.AnchorPoint = Vector2.new(0, 0)
+iconFrame.BackgroundColor3 = Color3.fromRGB(80, 40, 140)
+iconFrame.BackgroundTransparency = 0.2
+iconFrame.BorderSizePixel = 2
+iconFrame.BorderColor3 = Color3.fromRGB(138, 43, 226)
+iconFrame.Image = "rbxassetid://4483362458"
+iconFrame.Visible = false
+iconFrame.Parent = ScreenGui
+
+local iconCorner = Instance.new("UICorner")
+iconCorner.CornerRadius = UDim.new(1, 0)
+iconCorner.Parent = iconFrame
+
+local iconLabel = Instance.new("TextLabel")
+iconLabel.Size = UDim2.new(1, 0, 1, 0)
+iconLabel.BackgroundTransparency = 1
+iconLabel.Text = "✦"
+iconLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+iconLabel.TextSize = 22
+iconLabel.Font = Enum.Font.GothamBold
+iconLabel.Parent = iconFrame
+
+-- ===== ЛОГИКА КНОПОК =====
+btnRed.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- Жёлтая — свернуть в иконку
-YellowBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    Icon.Visible = true
+btnYellow.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    iconFrame.Visible = true
 end)
 
--- Зелёная — закрепить
-GreenBtn.MouseButton1Click:Connect(function()
-    local pinned = not getgenv()._pinned
-    getgenv()._pinned = pinned
-    GreenBtn.BackgroundColor3 = pinned and Color3.fromRGB(20, 180, 40) or Color3.fromRGB(40, 200, 64)
+iconFrame.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    iconFrame.Visible = false
 end)
 
--- ===== ПЕРЕТАСКИВАНИЕ =====
+-- ===== ПЕРЕТАСКИВАНИЕ ПО ВСЕЙ РАМКЕ =====
 local dragging = false
-local dragStart, startPos
+local dragInput, mousePos, framePos
 
-Header.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+-- Захват нажатия на любую часть меню (кроме кнопок)
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
-        dragStart = i.Position
-        startPos = MainFrame.Position
-        i.Changed:Connect(function()
-            if i.UserInputState == Enum.UserInputState.End then dragging = false end
+        mousePos = input.Position
+        framePos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
         end)
     end
 end)
 
-UserInputService.InputChanged:Connect(function(i)
-    if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
-        local d = i.Position - dragStart
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale, startPos.X.Offset + d.X,
-            startPos.Y.Scale, startPos.Y.Offset + d.Y
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - mousePos
+        mainFrame.Position = UDim2.new(
+            framePos.X.Scale, framePos.X.Offset + delta.X,
+            framePos.Y.Scale, framePos.Y.Offset + delta.Y
         )
     end
 end)
 
--- ===== ЛЕВАЯ ПАНЕЛЬ =====
-local LeftPanel = Instance.new("Frame")
-LeftPanel.Size = UDim2.new(0, 115, 1, -45)
-LeftPanel.Position = UDim2.new(0, 0, 0, 45)
-LeftPanel.BackgroundColor3 = Color3.fromRGB(12, 12, 20)
-LeftPanel.BackgroundTransparency = 0.2
-LeftPanel.Parent = MainFrame
+-- ===== ПЕРЕТАСКИВАНИЕ ИКОНКИ =====
+local iconDragging = false
+local iconDragInput, iconMousePos, iconFramePos
 
-local Border = Instance.new("Frame")
-Border.Size = UDim2.new(0, 1, 0.85, 0)
-Border.Position = UDim2.new(1, -1, 0.075, 0)
-Border.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-Border.BackgroundTransparency = 0.4
-Border.Parent = LeftPanel
+iconFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        iconDragging = true
+        iconMousePos = input.Position
+        iconFramePos = iconFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                iconDragging = false
+            end
+        end)
+    end
+end)
+
+iconFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        iconDragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == iconDragInput and iconDragging then
+        local delta = input.Position - iconMousePos
+        iconFrame.Position = UDim2.new(
+            iconFramePos.X.Scale, iconFramePos.X.Offset + delta.X,
+            iconFramePos.Y.Scale, iconFramePos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- ============================================
+-- ЛЕВАЯ ПАНЕЛЬ
+-- ============================================
+local leftPanel = Instance.new("Frame")
+leftPanel.Size = UDim2.new(0, 110, 1, -40)
+leftPanel.Position = UDim2.new(0, 0, 0, 40)
+leftPanel.BackgroundTransparency = 1
+leftPanel.Parent = mainFrame
+
+local border = Instance.new("Frame")
+border.Size = UDim2.new(0, 1, 0.85, 0)
+border.Position = UDim2.new(1, -1, 0.075, 0)
+border.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+border.BackgroundTransparency = 0.4
+border.Parent = leftPanel
 
 -- ===== ПРОФИЛЬ =====
-local ProfileFrame = Instance.new("Frame")
-ProfileFrame.Size = UDim2.new(0.9, 0, 0, 45)
-ProfileFrame.Position = UDim2.new(0.05, 0, 1, -50)
-ProfileFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-ProfileFrame.BackgroundTransparency = 0.2
-ProfileFrame.BorderSizePixel = 1
-ProfileFrame.BorderColor3 = Color3.fromRGB(40, 40, 50)
-ProfileFrame.Parent = LeftPanel
+local profileFrame = Instance.new("Frame")
+profileFrame.Size = UDim2.new(0.9, 0, 0, 38)
+profileFrame.Position = UDim2.new(0.05, 0, 1, -42)
+profileFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+profileFrame.BackgroundTransparency = 0.2
+profileFrame.BorderSizePixel = 1
+profileFrame.BorderColor3 = Color3.fromRGB(40, 40, 50)
+profileFrame.Parent = leftPanel
 
-local ProfileCorner = Instance.new("UICorner")
-ProfileCorner.CornerRadius = UDim.new(0, 8)
-ProfileCorner.Parent = ProfileFrame
+local profileCorner = Instance.new("UICorner")
+profileCorner.CornerRadius = UDim.new(0, 8)
+profileCorner.Parent = profileFrame
 
-local Avatar = Instance.new("ImageLabel")
-Avatar.Size = UDim2.new(0, 28, 0, 28)
-Avatar.Position = UDim2.new(0.08, 0, 0.08, 0)
-Avatar.BackgroundTransparency = 1
-Avatar.BorderSizePixel = 1
-Avatar.BorderColor3 = Color3.fromRGB(60, 60, 80)
-Avatar.Parent = ProfileFrame
+local avatar = Instance.new("ImageLabel")
+avatar.Size = UDim2.new(0, 24, 0, 24)
+avatar.Position = UDim2.new(0.08, 0, 0.08, 0)
+avatar.BackgroundTransparency = 1
+avatar.BorderSizePixel = 1
+avatar.BorderColor3 = Color3.fromRGB(60, 60, 80)
+avatar.Parent = profileFrame
 
-local AvatarCorner = Instance.new("UICorner")
-AvatarCorner.CornerRadius = UDim.new(1, 0)
-AvatarCorner.Parent = Avatar
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(1, 0)
+avatarCorner.Parent = avatar
 
 local function LoadAvatar()
     local userId = LP.UserId
     if userId then
-        Avatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
+        avatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
     end
 end
 LoadAvatar()
 
-local AvatarFallback = Instance.new("TextLabel")
-AvatarFallback.Size = UDim2.new(1, 0, 1, 0)
-AvatarFallback.BackgroundTransparency = 1
-AvatarFallback.Text = string.sub(LP.Name, 1, 1):upper()
-AvatarFallback.TextColor3 = Color3.fromRGB(255, 255, 255)
-AvatarFallback.TextSize = 16
-AvatarFallback.Font = Enum.Font.GothamBold
-AvatarFallback.Parent = Avatar
+local avatarFallback = Instance.new("TextLabel")
+avatarFallback.Size = UDim2.new(1, 0, 1, 0)
+avatarFallback.BackgroundTransparency = 1
+avatarFallback.Text = string.sub(LP.Name, 1, 1):upper()
+avatarFallback.TextColor3 = Color3.fromRGB(255, 255, 255)
+avatarFallback.TextSize = 14
+avatarFallback.Font = Enum.Font.GothamBold
+avatarFallback.Parent = avatar
 
-local Nickname = Instance.new("TextLabel")
-Nickname.Size = UDim2.new(0.5, 0, 1, 0)
-Nickname.Position = UDim2.new(0.32, 0, 0, 0)
-Nickname.BackgroundTransparency = 1
-Nickname.Text = LP.Name
-Nickname.TextColor3 = Color3.fromRGB(200, 200, 220)
-Nickname.TextSize = 12
-Nickname.Font = Enum.Font.Gotham
-Nickname.TextXAlignment = Enum.TextXAlignment.Left
-Nickname.Parent = ProfileFrame
+local nickname = Instance.new("TextLabel")
+nickname.Size = UDim2.new(0.5, 0, 1, 0)
+nickname.Position = UDim2.new(0.32, 0, 0, 0)
+nickname.BackgroundTransparency = 1
+nickname.Text = LP.Name
+nickname.TextColor3 = Color3.fromRGB(200, 200, 220)
+nickname.TextSize = 11
+nickname.Font = Enum.Font.Gotham
+nickname.TextXAlignment = Enum.TextXAlignment.Left
+nickname.Parent = profileFrame
 
-local Arrow = Instance.new("TextLabel")
-Arrow.Size = UDim2.new(0, 16, 0, 1)
-Arrow.Position = UDim2.new(0.85, 0, 0, 0)
-Arrow.BackgroundTransparency = 1
-Arrow.Text = ">"
-Arrow.TextColor3 = Color3.fromRGB(140, 140, 170)
-Arrow.TextSize = 16
-Arrow.Font = Enum.Font.GothamBold
-Arrow.Parent = ProfileFrame
+local arrow = Instance.new("TextLabel")
+arrow.Size = UDim2.new(0, 14, 0, 1)
+arrow.Position = UDim2.new(0.85, 0, 0, 0)
+arrow.BackgroundTransparency = 1
+arrow.Text = ">"
+arrow.TextColor3 = Color3.fromRGB(140, 140, 170)
+arrow.TextSize = 14
+arrow.Font = Enum.Font.GothamBold
+arrow.Parent = profileFrame
 
--- ===== КНОПКИ =====
+-- ===== КНОПКИ НАВИГАЦИИ =====
 local btnData = {"🏠 Home", "⚔️ Combat", "🌾 Farm", "⚙️ Settings"}
 local btnObjects = {}
 
 for i = 1, #btnData do
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.85, 0, 0, 30)
-    btn.Position = UDim2.new(0.075, 0, 0, 8 + (i-1) * 36)
+    btn.Size = UDim2.new(0.85, 0, 0, 26)
+    btn.Position = UDim2.new(0.075, 0, 0, 8 + (i-1) * 32)
     btn.BackgroundColor3 = (i == 1) and Color3.fromRGB(80, 40, 140) or Color3.fromRGB(30, 30, 40)
     btn.Text = btnData[i]
     btn.TextColor3 = (i == 1) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 220)
-    btn.TextSize = 14
+    btn.TextSize = 13
     btn.Font = Enum.Font.Gotham
     btn.BorderSizePixel = 1
     btn.BorderColor3 = (i == 1) and Color3.fromRGB(80, 40, 140) or Color3.fromRGB(40, 40, 50)
-    btn.Parent = LeftPanel
+    btn.Parent = leftPanel
     
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 6)
@@ -254,12 +298,14 @@ for i = 1, #btnData do
     btnObjects[i] = btn
 end
 
--- ===== ПРАВАЯ ПАНЕЛЬ =====
-local RightPanel = Instance.new("Frame")
-RightPanel.Size = UDim2.new(1, -130, 1, -45)
-RightPanel.Position = UDim2.new(0, 120, 0, 45)
-RightPanel.BackgroundTransparency = 1
-RightPanel.Parent = MainFrame
+-- ============================================
+-- ПРАВАЯ ПАНЕЛЬ
+-- ============================================
+local rightPanel = Instance.new("Frame")
+rightPanel.Size = UDim2.new(1, -120, 1, -40)
+rightPanel.Position = UDim2.new(0, 115, 0, 40)
+rightPanel.BackgroundTransparency = 1
+rightPanel.Parent = mainFrame
 
 -- ===== КОНТЕНТ =====
 local contents = {}
@@ -272,22 +318,22 @@ for i = 1, #btnData do
     f.ScrollBarThickness = 4
     f.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
     f.Visible = (i == 1)
-    f.Parent = RightPanel
+    f.Parent = rightPanel
     
     if i == 4 then
         -- Настройки
     else
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, 0, 40)
+        label.Size = UDim2.new(1, 0, 0, 35)
         label.Position = UDim2.new(0, 0, 0.2, 0)
         label.BackgroundTransparency = 1
         label.Text = "📁 " .. btnData[i]
         label.TextColor3 = Color3.fromRGB(200, 200, 220)
-        label.TextSize = 18
+        label.TextSize = 16
         label.Font = Enum.Font.GothamBold
         label.TextXAlignment = Enum.TextXAlignment.Center
         label.Parent = f
-        f.CanvasSize = UDim2.new(0, 0, 0, 100)
+        f.CanvasSize = UDim2.new(0, 0, 0, 80)
     end
     contents[i] = f
 end
@@ -296,23 +342,23 @@ end
 -- НАСТРОЙКИ
 -- ============================================
 local settingsContent = contents[4]
-settingsContent.CanvasSize = UDim2.new(0, 0, 0, 300)
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 250)
 
 local settingsLabel = Instance.new("TextLabel")
-settingsLabel.Size = UDim2.new(1, 0, 0, 40)
+settingsLabel.Size = UDim2.new(1, 0, 0, 35)
 settingsLabel.Position = UDim2.new(0, 0, 0, 5)
 settingsLabel.BackgroundTransparency = 1
 settingsLabel.Text = "⚙️ Настройки"
 settingsLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-settingsLabel.TextSize = 18
+settingsLabel.TextSize = 16
 settingsLabel.Font = Enum.Font.GothamBold
 settingsLabel.TextXAlignment = Enum.TextXAlignment.Center
 settingsLabel.Parent = settingsContent
 
 -- Прозрачность
 local transCard = Instance.new("Frame")
-transCard.Size = UDim2.new(0.9, 0, 0, 46)
-transCard.Position = UDim2.new(0.05, 0, 0, 50)
+transCard.Size = UDim2.new(0.9, 0, 0, 40)
+transCard.Position = UDim2.new(0.05, 0, 0, 45)
 transCard.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
 transCard.BackgroundTransparency = 0.2
 transCard.BorderSizePixel = 1
@@ -325,22 +371,22 @@ transCardCorner.Parent = transCard
 
 local transLabel = Instance.new("TextLabel")
 transLabel.Size = UDim2.new(0.6, 0, 1, 0)
-transLabel.Position = UDim2.new(0, 12, 0, 0)
+transLabel.Position = UDim2.new(0, 10, 0, 0)
 transLabel.BackgroundTransparency = 1
 transLabel.Text = "🪟 Прозрачность"
 transLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-transLabel.TextSize = 14
+transLabel.TextSize = 13
 transLabel.Font = Enum.Font.GothamBold
 transLabel.TextXAlignment = Enum.TextXAlignment.Left
 transLabel.Parent = transCard
 
 local transToggle = Instance.new("TextButton")
-transToggle.Size = UDim2.new(0.15, 0, 0, 28)
+transToggle.Size = UDim2.new(0.15, 0, 0, 24)
 transToggle.Position = UDim2.new(0.8, 0, 0.1, 0)
 transToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
 transToggle.Text = "OFF"
 transToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-transToggle.TextSize = 12
+transToggle.TextSize = 11
 transToggle.Font = Enum.Font.GothamBold
 transToggle.BorderSizePixel = 1
 transToggle.BorderColor3 = Color3.fromRGB(50, 50, 60)
@@ -355,13 +401,13 @@ transToggle.MouseButton1Click:Connect(function()
     isTransparent = not isTransparent
     transToggle.Text = isTransparent and "ON" or "OFF"
     transToggle.BackgroundColor3 = isTransparent and Color3.fromRGB(50, 150, 255) or Color3.fromRGB(40, 40, 60)
-    MainFrame.BackgroundTransparency = isTransparent and 0.15 or 0
+    mainFrame.BackgroundTransparency = isTransparent and 0.15 or 0
 end)
 
 -- Темы
 local themeCard = Instance.new("Frame")
-themeCard.Size = UDim2.new(0.9, 0, 0, 80)
-themeCard.Position = UDim2.new(0.05, 0, 0, 106)
+themeCard.Size = UDim2.new(0.9, 0, 0, 70)
+themeCard.Position = UDim2.new(0.05, 0, 0, 95)
 themeCard.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
 themeCard.BackgroundTransparency = 0.2
 themeCard.BorderSizePixel = 1
@@ -373,11 +419,11 @@ themeCardCorner.CornerRadius = UDim.new(0, 8)
 themeCardCorner.Parent = themeCard
 
 local themeLabel = Instance.new("TextLabel")
-themeLabel.Size = UDim2.new(1, 0, 0, 30)
+themeLabel.Size = UDim2.new(1, 0, 0, 25)
 themeLabel.BackgroundTransparency = 1
 themeLabel.Text = "🎨 Темы"
 themeLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-themeLabel.TextSize = 14
+themeLabel.TextSize = 13
 themeLabel.Font = Enum.Font.GothamBold
 themeLabel.TextXAlignment = Enum.TextXAlignment.Left
 themeLabel.Parent = themeCard
@@ -391,13 +437,13 @@ local themeColors = {
 local themeButtons = {}
 for i, data in pairs(themeColors) do
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.2, 0, 0, 30)
-    btn.Position = UDim2.new(0.05 + (i-1) * 0.24, 0, 0, 35)
+    btn.Size = UDim2.new(0.2, 0, 0, 26)
+    btn.Position = UDim2.new(0.05 + (i-1) * 0.24, 0, 0, 30)
     btn.BackgroundColor3 = data[2]
     btn.BackgroundTransparency = 0.2
     btn.Text = data[1]
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 12
+    btn.TextSize = 11
     btn.Font = Enum.Font.GothamBold
     btn.BorderSizePixel = 1
     btn.BorderColor3 = Color3.fromRGB(50, 50, 60)
@@ -408,7 +454,7 @@ for i, data in pairs(themeColors) do
     btnCorner.Parent = btn
     
     btn.MouseButton1Click:Connect(function()
-        MainFrame.BackgroundColor3 = data[2]
+        mainFrame.BackgroundColor3 = data[2]
         for _, b in pairs(themeButtons) do
             b.BorderSizePixel = 1
             b.BorderColor3 = Color3.fromRGB(50, 50, 60)
@@ -420,10 +466,10 @@ for i, data in pairs(themeColors) do
     table.insert(themeButtons, btn)
 end
 
-settingsContent.CanvasSize = UDim2.new(0, 0, 0, 220)
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 190)
 
 -- ============================================
--- ПЕРЕКЛЮЧЕНИЕ
+-- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
 -- ============================================
 local function SwitchTab(index)
     for i, btn in pairs(btnObjects) do
@@ -448,4 +494,4 @@ for i, btn in pairs(btnObjects) do
     end)
 end
 
-print("✦ Astra Hub (Финальная версия) загружена!")
+print("✦ ASTRA HUB (Перетаскивание по всей рамке) загружена!")
