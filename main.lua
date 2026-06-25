@@ -1,4 +1,4 @@
--- Astra Hub (Ringta Edition) — ВСЁ В ОДНОМ
+-- Astra Hub (Ringta Edition) — ПОЛНАЯ ВЕРСИЯ
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local CoreGui = game:GetService("CoreGui")
@@ -29,15 +29,6 @@ local Config = {
 }
 
 -- ============================================
--- СОХРАНЕНИЕ ПОЛЬЗОВАТЕЛЬСКИХ НАСТРОЕК
--- ============================================
-getgenv().AstraSettings = getgenv().AstraSettings or {
-    Transparency = Config.Transparency,
-    Theme = Config.ThemeName
-}
-local UserSettings = getgenv().AstraSettings
-
--- ============================================
 -- GUI
 -- ============================================
 local ScreenGui = Instance.new("ScreenGui")
@@ -45,7 +36,7 @@ ScreenGui.Name = "AstraGUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- ===== ИКОНКА (СПРЯТАНА) =====
+-- ===== ИКОНКА =====
 local Icon = Instance.new("ImageButton")
 Icon.Size = UDim2.new(0, 45, 0, 45)
 Icon.Position = UDim2.new(0.02, 0, 0.02, 0)
@@ -76,7 +67,7 @@ local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, Config.Width, 0, Config.Height)
 MainFrame.Position = UDim2.new(0.5, -Config.Width/2, 0.5, -Config.Height/2)
 MainFrame.BackgroundColor3 = Config.Theme
-MainFrame.BackgroundTransparency = UserSettings.Transparency and Config.TransparencyValue or 0
+MainFrame.BackgroundTransparency = 0
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Visible = true
@@ -346,9 +337,9 @@ transLabel.Parent = transFrame
 local transToggle = Instance.new("TextButton")
 transToggle.Size = UDim2.new(0.2, 0, 0, 30)
 transToggle.Position = UDim2.new(0.75, 0, 0, 0)
-transToggle.BackgroundColor3 = UserSettings.Transparency and Color3.fromRGB(50, 150, 255) or Color3.fromRGB(40, 40, 60)
+transToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
 transToggle.BackgroundTransparency = 0.2
-transToggle.Text = UserSettings.Transparency and "ON" or "OFF"
+transToggle.Text = "OFF"
 transToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 transToggle.TextSize = 14
 transToggle.Font = Enum.Font.GothamBold
@@ -360,11 +351,12 @@ local transCorner = Instance.new("UICorner")
 transCorner.CornerRadius = UDim.new(0, 6)
 transCorner.Parent = transToggle
 
+local isTransparent = false
 transToggle.MouseButton1Click:Connect(function()
-    UserSettings.Transparency = not UserSettings.Transparency
-    transToggle.Text = UserSettings.Transparency and "ON" or "OFF"
-    transToggle.BackgroundColor3 = UserSettings.Transparency and Color3.fromRGB(50, 150, 255) or Color3.fromRGB(40, 40, 60)
-    MainFrame.BackgroundTransparency = UserSettings.Transparency and Config.TransparencyValue or 0
+    isTransparent = not isTransparent
+    transToggle.Text = isTransparent and "ON" or "OFF"
+    transToggle.BackgroundColor3 = isTransparent and Color3.fromRGB(50, 150, 255) or Color3.fromRGB(40, 40, 60)
+    MainFrame.BackgroundTransparency = isTransparent and 0.15 or 0
 end)
 
 -- ===== ТЕМЫ =====
@@ -384,8 +376,13 @@ themeLabel.Font = Enum.Font.GothamBold
 themeLabel.TextXAlignment = Enum.TextXAlignment.Left
 themeLabel.Parent = themeFrame
 
-local themeColors = Config.Themes
-local themeButtons = {}
+local themeColors = {
+    {"Фиолетовый", Color3.fromRGB(80, 40, 140)},
+    {"Красный", Color3.fromRGB(180, 40, 40)},
+    {"Синий", Color3.fromRGB(40, 80, 180)},
+    {"Зелёный", Color3.fromRGB(40, 180, 80)},
+    {"Оранжевый", Color3.fromRGB(180, 120, 40)},
+}
 
 for i, data in pairs(themeColors) do
     local btn = Instance.new("TextButton")
@@ -397,8 +394,8 @@ for i, data in pairs(themeColors) do
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.TextSize = 12
     btn.Font = Enum.Font.GothamBold
-    btn.BorderSizePixel = (UserSettings.Theme == data[1]) and 2 or 1
-    btn.BorderColor3 = (UserSettings.Theme == data[1]) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 60)
+    btn.BorderSizePixel = 1
+    btn.BorderColor3 = Color3.fromRGB(50, 50, 60)
     btn.Parent = themeFrame
     
     local btnCorner = Instance.new("UICorner")
@@ -406,22 +403,13 @@ for i, data in pairs(themeColors) do
     btnCorner.Parent = btn
     
     btn.MouseButton1Click:Connect(function()
-        UserSettings.Theme = data[1]
         MainFrame.BackgroundColor3 = data[2]
-        for _, b in pairs(themeButtons) do
-            b.BorderSizePixel = 1
-            b.BorderColor3 = Color3.fromRGB(50, 50, 60)
-        end
-        btn.BorderSizePixel = 2
-        btn.BorderColor3 = Color3.fromRGB(255, 255, 255)
     end)
-    
-    table.insert(themeButtons, btn)
 end
 
 settingsFrame.CanvasSize = UDim2.new(0, 0, 0, 220)
 
--- ===== ПЕРЕКЛЮЧЕНИЕ =====
+-- ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
 local function SwitchTab(index)
     for i, btn in pairs(btnObjects) do
         if i == index then
@@ -445,4 +433,4 @@ for i, btn in pairs(btnObjects) do
     end)
 end
 
-print("✦ Astra Hub (Ringta Edition) загружена! (ВСЁ В ОДНОМ)")
+print("✦ Astra Hub (Ringta Edition) загружена!")
