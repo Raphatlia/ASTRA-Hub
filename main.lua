@@ -12,8 +12,8 @@ local TweenService = game:GetService("TweenService")
 local GameID = game.PlaceId
 
 local GameModules = {
-    [107467295209358] = "https://raw.githubusercontent.com/ТВОЙ_НИК/AstraHub/main/AstraHub_A_Desrt.lua",
-    [18934709778] = "https://raw.githubusercontent.com/ТВОЙ_НИК/AstraHub/main/AstraHub_A_Long_Road.lua",
+    [107467295209358] = "https://raw.githubusercontent.com/Raphatlia/AstraHub/main/AstraHub_A_Desrt.lua",
+    [18934709778] = "https://raw.githubusercontent.com/Raphatlia/AstraHub/main/AstraHub_A_Long_Road.lua",
 }
 
 -- Флаг, который говорит модулям, что GUI уже загружен
