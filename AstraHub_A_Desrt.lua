@@ -6,11 +6,13 @@ repeat task.wait() until getgenv().AstraHubLoaded
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
--- ============================================
--- ESP ДЛЯ A DESERT
--- ============================================
-local espDistance = shared.AstraSettings.ESPDistance or 1000
+-- Получаем глобальные переменные
+local espEnabled = getgenv().espEnabled
+local espDistance = getgenv().espDistance or 1000
 
+-- ============================================
+-- ФУНКЦИИ ESP
+-- ============================================
 local function createItemESP(instance, text, icon)
     if instance:FindFirstChild("ESP_Item") then return end
     local gui = Instance.new("BillboardGui")
@@ -69,7 +71,7 @@ local function runItemESP()
                     
                     local objPos = obj.Position
                     local distance = (playerPos.Position - objPos).Magnitude
-                    if distance > espDistance then continue end
+                    if distance > getgenv().espDistance then continue end
                     
                     if model == LP.Character then continue end
                     
@@ -111,9 +113,8 @@ local function runItemESP()
 end
 
 -- ============================================
--- ПОДКЛЮЧАЕМ ФУНКЦИИ К GUI
+-- ФУНКЦИЯ ВКЛЮЧЕНИЯ ESP
 -- ============================================
-
 local function toggleESP(state)
     getgenv().espEnabled = state
     if state then
