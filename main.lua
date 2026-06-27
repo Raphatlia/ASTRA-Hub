@@ -1,11 +1,12 @@
--- ASTRA HUB V1.0 — ПРЕМИУМ ФИНАЛ (ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ)
+--- ASTRA HUB V1.0 — ФИНАЛ (ДВОЙНАЯ ПРОВЕРКА ИГРЫ)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 -- ============================================
--- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ (ВИДНЫ В МОДУЛЯХ)
+-- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 -- ============================================
 getgenv().AstraHubLoaded = false
 getgenv().espEnabled = false
@@ -614,7 +615,7 @@ infoLabel.Parent = infoCard
 settingsContent.CanvasSize = UDim2.new(0, 0, 0, 280)
 
 -- ============================================
--- VISUALS (СВИТЧЕР + ПОЛЗУНОК)
+-- VISUALS
 -- ============================================
 local visualsContent = contents[3]
 visualsContent.CanvasSize = UDim2.new(0, 0, 0, 250)
@@ -865,3 +866,45 @@ end
 
 getgenv().AstraHubLoaded = true
 print("[ASTRA] Главный каркас загружен! Игра: " .. currentGameName)
+
+-- ============================================
+-- АВТО-ЗАПУСК ESP (НАДЁЖНЫЙ МЕТОД)
+-- ============================================
+task.spawn(function()
+    task.wait(3)
+    local gameName = game.Name
+    
+    if string.find(gameName, "A desrt") or string.find(gameName, "A Desrt") or string.find(gameName, "desrt") then
+        print("[ASTRA] Найдена игра: A desrt!")
+        getgenv().espEnabled = true
+        if getgenv().toggleESP then
+            getgenv().toggleESP(true)
+        end
+    elseif string.find(gameName, "A Long Road") or string.find(gameName, "Long Road") then
+        print("[ASTRA] Найдена игра: A Long Road!")
+        getgenv().espEnabled = true
+        if getgenv().toggleESP then
+            getgenv().toggleESP(true)
+        end
+    else
+        -- Запасной вариант: если название не совпало, пробуем через интернет
+        local success, realName = pcall(function()
+            return MarketplaceService:GetProductInfo(game.PlaceId).Name
+        end)
+        if success and (string.find(realName, "desrt") or string.find(realName, "Desrt")) then
+            print("[ASTRA] Найдена игра (по ID): A desrt!")
+            getgenv().espEnabled = true
+            if getgenv().toggleESP then
+                getgenv().toggleESP(true)
+            end
+        elseif success and string.find(realName, "Long Road") then
+            print("[ASTRA] Найдена игра (по ID): A Long Road!")
+            getgenv().espEnabled = true
+            if getgenv().toggleESP then
+                getgenv().toggleESP(true)
+            end
+        else
+            print("[ASTRA] Игра не распознана: " .. gameName)
+        end
+    end
+end)
