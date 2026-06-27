@@ -1,6 +1,4 @@
--- ASTRA HUB V1.0 — ГЛАВНЫЙ КАРКАС
--- Загружает модули для игр и предоставляет общее GUI
-
+-- ASTRA HUB V1.0 — ПРЕМИУМ ФИНАЛ (ОБВОДКА + ИКОНКА + ИНФО-КАРТОЧКА)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -12,14 +10,12 @@ local TweenService = game:GetService("TweenService")
 local GameID = game.PlaceId
 
 local GameModules = {
-    [107467295209358] = "https://raw.githubusercontent.com/Raphatlia/astrahub/main/astrahub.lua",
-    [18934709778] = "https://raw.githubusercontent.com/Raphatlia/astrahub/main/astrahub.lua",
+    [107467295209358] = "https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/astrahub.lua",
+    [18934709778] = "https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/astrahub.lua",
 }
 
--- Флаг, который говорит модулям, что GUI уже загружен
 getgenv().AstraHubLoaded = false
 
--- Загружаем модуль для текущей игры (если есть)
 if GameModules[GameID] then
     print("[ASTRA] Загрузка модуля для игры ID: " .. GameID)
     local success, err = pcall(function()
@@ -58,7 +54,7 @@ local themeColorsList = {
 }
 
 -- ============================================
--- ПЛАВАЮЩАЯ КНОПКА
+-- ПЛАВАЮЩАЯ КНОПКА (С ОБВОДКОЙ И ИКОНКОЙ)
 -- ============================================
 local floatingBtn = Instance.new("TextButton")
 floatingBtn.Size = UDim2.new(0, 180, 0, 46)
@@ -67,8 +63,8 @@ floatingBtn.AnchorPoint = Vector2.new(0.5, 0)
 floatingBtn.BackgroundColor3 = Color3.fromRGB(15, 12, 25)
 floatingBtn.BackgroundTransparency = 0.1
 floatingBtn.BorderSizePixel = 2
-floatingBtn.BorderColor3 = Color3.fromRGB(138, 43, 226)
-floatingBtn.Text = ">> Open Script"
+floatingBtn.BorderColor3 = Color3.fromRGB(138, 43, 226) -- ФИОЛЕТОВАЯ ОБВОДКА
+floatingBtn.Text = "Open Script"
 floatingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 floatingBtn.TextSize = 16
 floatingBtn.Font = Enum.Font.GothamBold
@@ -82,6 +78,19 @@ floatingBtn.Parent = ScreenGui
 local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(1, 0)
 btnCorner.Parent = floatingBtn
+
+-- ИКОНКА ПЕРЕТАСКИВАНИЯ
+local dragIcon = Instance.new("TextLabel")
+dragIcon.Size = UDim2.new(0, 30, 1, 0)
+dragIcon.Position = UDim2.new(0, 10, 0, 0)
+dragIcon.BackgroundTransparency = 1
+dragIcon.Text = "⠿"
+dragIcon.TextColor3 = Color3.fromRGB(180, 175, 210)
+dragIcon.TextSize = 20
+dragIcon.Font = Enum.Font.GothamBold
+dragIcon.TextXAlignment = Enum.TextXAlignment.Center
+dragIcon.TextYAlignment = Enum.TextYAlignment.Center
+dragIcon.Parent = floatingBtn
 
 local function openMenu()
     local menu = ScreenGui:FindFirstChild("mainFrame")
@@ -97,6 +106,31 @@ end
 
 floatingBtn.MouseButton1Click:Connect(openMenu)
 floatingBtn.TouchTap:Connect(openMenu)
+
+-- Перетаскивание кнопки
+local floatDrag = false
+local floatDragStart, floatStartPos
+floatingBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        floatDrag = true
+        floatDragStart = input.Position
+        floatStartPos = floatingBtn.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if not floatDrag then return end
+    if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+    local delta = input.Position - floatDragStart
+    floatingBtn.Position = UDim2.new(
+        floatStartPos.X.Scale, floatStartPos.X.Offset + delta.X,
+        floatStartPos.Y.Scale, floatStartPos.Y.Offset + delta.Y
+    )
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        floatDrag = false
+    end
+end)
 
 -- ============================================
 -- ОСНОВНОЕ ОКНО (ИДЕАЛЬНЫЙ ЦЕНТР)
@@ -160,6 +194,22 @@ versionText.TextColor3 = Color3.fromRGB(255, 255, 255)
 versionText.TextSize = 11
 versionText.Font = Enum.Font.GothamBold
 versionText.Parent = versionTag
+
+-- ПУЛЬСАЦИЯ V1.0
+task.spawn(function()
+    while versionTag and versionTag.Parent do
+        local tween1 = TweenService:Create(versionTag, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            BackgroundColor3 = Color3.fromRGB(180, 80, 255)
+        })
+        local tween2 = TweenService:Create(versionTag, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+            BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+        })
+        tween1:Play()
+        tween1.Completed:Wait()
+        tween2:Play()
+        tween2.Completed:Wait()
+    end
+end)
 
 -- ============================================
 -- MACOS КНОПКИ
@@ -238,7 +288,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- ============================================
--- ЛЕВАЯ ПАНЕЛЬ И ВКЛАДКИ
+-- ЛЕВАЯ ПАНЕЛЬ (ПРОЗРАЧНЫЕ КНОПКИ)
 -- ============================================
 local leftPanel = Instance.new("Frame")
 leftPanel.Size = UDim2.new(0, 100, 1, -44)
@@ -289,7 +339,7 @@ for i = 1, #btnData do
 end
 
 -- ============================================
--- КАРТОЧКИ (СТЕКЛЯННЫЕ)
+-- КАРТОЧКИ (СТЕКЛЯННЫЕ + ПАРЯЩАЯ ТЕНЬ)
 -- ============================================
 local function createAeroCard(parent, title, yPos, defaultOn, callback)
     local card = Instance.new("Frame")
@@ -303,6 +353,19 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
     local cardCorner = Instance.new("UICorner")
     cardCorner.CornerRadius = UDim.new(0, 10)
     cardCorner.Parent = card
+
+    -- ПАРЯЩАЯ ТЕНЬ
+    local shadow = Instance.new("Frame")
+    shadow.Size = UDim2.new(1, 0, 1, 0)
+    shadow.Position = UDim2.new(0, 0, 0, 2)
+    shadow.BackgroundTransparency = 1
+    shadow.BorderSizePixel = 1
+    shadow.BorderColor3 = Color3.fromRGB(20, 15, 35)
+    shadow.ZIndex = -1
+    shadow.Parent = card
+    local shadowCorner = Instance.new("UICorner")
+    shadowCorner.CornerRadius = UDim.new(0, 10)
+    shadowCorner.Parent = shadow
 
     local cardBlur = Instance.new("BlurEffect")
     cardBlur.Parent = card
@@ -383,7 +446,7 @@ createAeroCard(featuresContent, "Auto Collect", 170, false)
 -- SETTINGS
 -- ============================================
 local settingsContent = contents[2]
-settingsContent.CanvasSize = UDim2.new(0, 0, 0, 200)
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 280) -- Увеличен для инфо-карточки
 
 local settingsLabel = Instance.new("TextLabel")
 settingsLabel.Size = UDim2.new(1, 0, 0, 35)
@@ -570,7 +633,31 @@ themeHeader.MouseButton1Click:Connect(function()
     end
 end)
 
-settingsContent.CanvasSize = UDim2.new(0, 0, 0, 190)
+-- ИНФО-КАРТОЧКА (v1.0 | by: CMarmoki)
+local infoCard = Instance.new("Frame")
+infoCard.Size = UDim2.new(1, -12, 0, 44)
+infoCard.Position = UDim2.new(0, 6, 0, 230)
+infoCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
+infoCard.BackgroundTransparency = 0.1
+infoCard.BorderSizePixel = 1
+infoCard.BorderColor3 = Color3.fromRGB(60, 50, 90)
+infoCard.Parent = settingsContent
+local infoCardCorner = Instance.new("UICorner")
+infoCardCorner.CornerRadius = UDim.new(0, 10)
+infoCardCorner.Parent = infoCard
+
+local infoLabel = Instance.new("TextLabel")
+infoLabel.Size = UDim2.new(1, 0, 1, 0)
+infoLabel.BackgroundTransparency = 1
+infoLabel.Text = "v1.0 | by: CMarmoki"
+infoLabel.TextColor3 = Color3.fromRGB(150, 150, 180)
+infoLabel.TextSize = 12
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextXAlignment = Enum.TextXAlignment.Center
+infoLabel.TextYAlignment = Enum.TextYAlignment.Center
+infoLabel.Parent = infoCard
+
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 280)
 
 -- ============================================
 -- VISUALS (ESP + ПОЛЗУНОК)
@@ -589,12 +676,11 @@ vLabel.Font = Enum.Font.GothamBold
 vLabel.TextXAlignment = Enum.TextXAlignment.Center
 vLabel.Parent = visualsContent
 
--- ===== ESP ПЕРЕМЕННЫЕ =====
+-- ESP ПЕРЕМЕННЫЕ
 getgenv().espEnabled = false
 getgenv().espThread = nil
 local espDistance = settings.ESPDistance or 1000
 
--- Функции, которые будут переопределены модулями
 getgenv().AstraHubLoaded = true
 
 -- ============================================
@@ -637,4 +723,4 @@ for i, btn in pairs(btnObjects) do
     end)
 end
 
-print("[ASTRA] Главный каркас загружен! Ожидаем модуль для игры " .. GameID)
+print("[ASTRA] Премиум финал загружен! Ожидаем модуль для игры " .. GameID)
