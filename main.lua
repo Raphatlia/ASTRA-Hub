@@ -12,8 +12,8 @@ local TweenService = game:GetService("TweenService")
 local GameID = game.PlaceId
 
 local GameModules = {
-    [107467295209358] = "https://raw.githubusercontent.com/Raphatlia/AstraHub/main/AstraHub_A_Desrt.lua",
-    [18934709778] = "https://raw.githubusercontent.com/Raphatlia/AstraHub/main/AstraHub_A_Long_Road.lua",
+    [107467295209358] = "https://raw.githubusercontent.com/Raphatlia/astrahub/main/astrahub.lua",
+    [18934709778] = "https://raw.githubusercontent.com/Raphatlia/astrahub/main/astrahub.lua",
 }
 
 -- Флаг, который говорит модулям, что GUI уже загружен
@@ -99,30 +99,28 @@ floatingBtn.MouseButton1Click:Connect(openMenu)
 floatingBtn.TouchTap:Connect(openMenu)
 
 -- ============================================
--- МЕНЮ (СТЕКЛЯННАЯ КАПЛЯ)
+-- ОСНОВНОЕ ОКНО (ИДЕАЛЬНЫЙ ЦЕНТР)
 -- ============================================
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "mainFrame"
-mainFrame.Size = UDim2.new(0, 0, 0, 0)
-mainFrame.Position = UDim2.new(0.5, -190, 0.5, -160)
+mainFrame.Size = UDim2.new(0, 380, 0, 320)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 mainFrame.BackgroundColor3 = themeColorsList[settings.Theme]
-mainFrame.BackgroundTransparency = 0.15
+mainFrame.BackgroundTransparency = settings.Transparent and 0.2 or 0.1
 mainFrame.BorderSizePixel = 1
-mainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255, 0.1)
+mainFrame.BorderColor3 = Color3.fromRGB(60, 50, 100)
 mainFrame.ClipsDescendants = true
 mainFrame.Visible = false
 mainFrame.Parent = ScreenGui
-
-local menuBlur = Instance.new("BlurEffect")
-menuBlur.Parent = mainFrame
-menuBlur.Size = 6
 
 local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 16)
 mainCorner.Parent = mainFrame
 
--- ===== ШАПКА =====
+-- ============================================
+-- ШАПКА
+-- ============================================
 local header = Instance.new("Frame")
 header.Size = UDim2.new(1, 0, 0, 44)
 header.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
@@ -163,7 +161,9 @@ versionText.TextSize = 11
 versionText.Font = Enum.Font.GothamBold
 versionText.Parent = versionTag
 
--- ===== MACOS КНОПКИ =====
+-- ============================================
+-- MACOS КНОПКИ
+-- ============================================
 local btnRed = Instance.new("TextButton")
 btnRed.Size = UDim2.new(0, 12, 0, 12)
 btnRed.Position = UDim2.new(1, -55, 0.5, 0)
@@ -204,7 +204,38 @@ btnGreen.Parent = header
 local btnGreenCorner = Instance.new("UICorner")
 btnGreenCorner.CornerRadius = UDim.new(1, 0)
 btnGreenCorner.Parent = btnGreen
-btnGreen.MouseButton1Click:Connect(function() mainFrame.Position = UDim2.new(0.5, -190, 0.5, -160) end)
+btnGreen.MouseButton1Click:Connect(function()
+    mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+end)
+
+-- ============================================
+-- ПЕРЕТАСКИВАНИЕ МЕНЮ
+-- ============================================
+local dragging = false
+local dragInput, mousePos, framePos
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        mousePos = input.Position
+        framePos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - mousePos
+        mainFrame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
 
 -- ============================================
 -- ЛЕВАЯ ПАНЕЛЬ И ВКЛАДКИ
@@ -329,7 +360,7 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
 end
 
 -- ============================================
--- FEATURES (ЗАГЛУШКИ)
+-- FEATURES
 -- ============================================
 local featuresContent = contents[1]
 featuresContent.CanvasSize = UDim2.new(0, 0, 0, 240)
@@ -558,7 +589,7 @@ vLabel.Font = Enum.Font.GothamBold
 vLabel.TextXAlignment = Enum.TextXAlignment.Center
 vLabel.Parent = visualsContent
 
--- ===== ESP ПЕРЕМЕННЫЕ (ГЛОБАЛЬНЫЕ) =====
+-- ===== ESP ПЕРЕМЕННЫЕ =====
 getgenv().espEnabled = false
 getgenv().espThread = nil
 local espDistance = settings.ESPDistance or 1000
