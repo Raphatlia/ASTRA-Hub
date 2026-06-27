@@ -7,7 +7,13 @@ local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
 -- ============================================
--- ESP ДЛЯ A DESERT
+-- ПЕРЕМЕННЫЕ (синхронизация с главным хабом)
+-- ============================================
+getgenv().espEnabled = getgenv().espEnabled or false
+getgenv().espDistance = getgenv().espDistance or 1000
+
+-- ============================================
+-- ФУНКЦИИ ESP
 -- ============================================
 
 local function createItemESP(instance, text, icon)
@@ -111,125 +117,38 @@ local function runItemESP()
 end
 
 -- ============================================
--- HUD ДЛЯ МАШИНЫ
+-- ФУНКЦИЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ ESP
 -- ============================================
-local CarHud = nil
-
-local function CreateCarHUD()
-    if CarHud then
-        CarHud:Destroy()
-        CarHud = nil
-        return
-    end
-
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "CarHUD"
-    screenGui.Parent = LP:WaitForChild("PlayerGui")
-    screenGui.ResetOnSpawn = false
-
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 150, 0, 150)
-    mainFrame.Position = UDim2.new(0.03, 0, 0.5, -75)
-    mainFrame.AnchorPoint = Vector2.new(0, 0.5)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    mainFrame.BackgroundTransparency = 0.5
-    mainFrame.BorderSizePixel = 1
-    mainFrame.BorderColor3 = Color3.fromRGB(138, 43, 226)
-    mainFrame.ClipsDescendants = true
-    mainFrame.Parent = screenGui
-    local mainCorner = Instance.new("UICorner")
-    mainCorner.CornerRadius = UDim.new(0, 12)
-    mainCorner.Parent = mainFrame
-
-    local speedLabel = Instance.new("TextLabel")
-    speedLabel.Size = UDim2.new(1, 0, 0, 30)
-    speedLabel.Position = UDim2.new(0, 0, 0, 10)
-    speedLabel.BackgroundTransparency = 1
-    speedLabel.Text = "0 km/h"
-    speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    speedLabel.TextSize = 20
-    speedLabel.Font = Enum.Font.GothamBold
-    speedLabel.TextXAlignment = Enum.TextXAlignment.Center
-    speedLabel.Parent = mainFrame
-
-    local fuelLabel = Instance.new("TextLabel")
-    fuelLabel.Size = UDim2.new(1, 0, 0, 20)
-    fuelLabel.Position = UDim2.new(0, 0, 0, 50)
-    fuelLabel.BackgroundTransparency = 1
-    fuelLabel.Text = "Fuel: 100%"
-    fuelLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    fuelLabel.TextSize = 14
-    fuelLabel.Font = Enum.Font.Gotham
-    fuelLabel.TextXAlignment = Enum.TextXAlignment.Center
-    fuelLabel.Parent = mainFrame
-
-    local healthLabel = Instance.new("TextLabel")
-    healthLabel.Size = UDim2.new(1, 0, 0, 20)
-    healthLabel.Position = UDim2.new(0, 0, 0, 75)
-    healthLabel.BackgroundTransparency = 1
-    healthLabel.Text = "HP: 100%"
-    healthLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    healthLabel.TextSize = 14
-    healthLabel.Font = Enum.Font.Gotham
-    healthLabel.TextXAlignment = Enum.TextXAlignment.Center
-    healthLabel.Parent = mainFrame
-
-    local boostLabel = Instance.new("TextLabel")
-    boostLabel.Size = UDim2.new(1, 0, 0, 20)
-    boostLabel.Position = UDim2.new(0, 0, 0, 100)
-    boostLabel.BackgroundTransparency = 1
-    boostLabel.Text = "Boost: OFF"
-    boostLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-    boostLabel.TextSize = 14
-    boostLabel.Font = Enum.Font.Gotham
-    boostLabel.TextXAlignment = Enum.TextXAlignment.Center
-    boostLabel.Parent = mainFrame
-
-    CarHud = {
-        ScreenGui = screenGui,
-        Frame = mainFrame,
-        SpeedLabel = speedLabel,
-        FuelLabel = fuelLabel,
-        HealthLabel = healthLabel,
-        BoostLabel = boostLabel
-    }
-end
-
--- ============================================
--- ОБНОВЛЕНИЕ HUD
--- ============================================
-local function UpdateCarHUD()
-    task.spawn(function()
-        while CarHud do
-            task.wait(0.1)
-            if not getgenv().hudEnabled then break end
-            
-            -- Здесь будет логика получения данных из игры
-            -- Пример:
-            local speed = 0
-            local fuel = 100
-            local health = 100
-            
-            CarHud.SpeedLabel.Text = math.floor(speed) .. " km/h"
-            CarHud.FuelLabel.Text = "Fuel: " .. math.floor(fuel) .. "%"
-            CarHud.HealthLabel.Text = "HP: " .. math.floor(health) .. "%"
+local function toggleESP(state)
+    getgenv().espEnabled = state
+    if state then
+        clearESP()
+        getgenv().espThread = task.spawn(runItemESP)
+        print("[ASTRA] ESP включён (A Desert)")
+    else
+        if getgenv().espThread then
+            task.cancel(getgenv().espThread)
+            getgenv().espThread = nil
         end
-    end)
+        clearESP()
+        print("[ASTRA] ESP выключен (A Desert)")
+    end
 end
 
+-- Делаем функцию доступной для меню
+getgenv().toggleESP = toggleESP
+
 -- ============================================
--- АВТО-ЗАПУСК
+-- АВТО-ЗАПУСК ESP (если игра A Desert)
 -- ============================================
 task.wait(2)
 
--- Включаем ESP
-getgenv().espEnabled = true
-clearESP()
-getgenv().espThread = task.spawn(runItemESP)
+local currentGameName = game.Name
+if string.find(currentGameName, "A desrt") or string.find(currentGameName, "A Desrt") or string.find(currentGameName, "desrt") then
+    print("[ASTRA] Найдена A Desert! Запускаю ESP...")
+    toggleESP(true)
+else
+    print("[ASTRA] Модуль загружен, но игра не A Desert. ESP ожидает ручного включения.")
+end
 
--- Создаём и включаем HUD
-CreateCarHUD()
-getgenv().hudEnabled = true
-UpdateCarHUD()
-
-print("[ASTRA] Модуль A Desert загружен! ESP и HUD включены.")
+print("[ASTRA] Модуль A Desert загружен!")
