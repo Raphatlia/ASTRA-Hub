@@ -1,4 +1,4 @@
---- ASTRA HUB V1.0 — ФИНАЛ (ДВОЙНАЯ ПРОВЕРКА ИГРЫ)
+-- ASTRA HUB V1.0 — ФИНАЛ (АВТО-ЗАПУСК ПО НАЗВАНИЮ)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -113,7 +113,7 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 16)
 mainCorner.Parent = mainFrame
 
--- ===== ШАПКА =====
+-- ШАПКА
 local header = Instance.new("Frame")
 header.Size = UDim2.new(1, 0, 0, 44)
 header.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
@@ -169,7 +169,7 @@ task.spawn(function()
     end
 end)
 
--- ===== MACOS КНОПКИ =====
+-- MACOS КНОПКИ
 local btnRed = Instance.new("TextButton")
 btnRed.Size = UDim2.new(0, 12, 0, 12)
 btnRed.Position = UDim2.new(1, -55, 0.5, 0)
@@ -214,9 +214,7 @@ btnGreen.MouseButton1Click:Connect(function()
     mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 end)
 
--- ============================================
 -- ПЕРЕТАСКИВАНИЕ МЕНЮ
--- ============================================
 local dragging = false
 local dragInput, mousePos, framePos
 mainFrame.InputBegan:Connect(function(input)
@@ -243,9 +241,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ============================================
 -- ЛЕВАЯ ПАНЕЛЬ
--- ============================================
 local leftPanel = Instance.new("Frame")
 leftPanel.Size = UDim2.new(0, 100, 1, -44)
 leftPanel.Position = UDim2.new(0, 0, 0, 44)
@@ -272,9 +268,7 @@ for i = 1, #btnData do
     btnObjects[i] = btn
 end
 
--- ============================================
 -- ПРАВАЯ ПАНЕЛЬ
--- ============================================
 local rightPanel = Instance.new("Frame")
 rightPanel.Size = UDim2.new(1, -110, 1, -44)
 rightPanel.Position = UDim2.new(0, 105, 0, 44)
@@ -294,9 +288,7 @@ for i = 1, #btnData do
     contents[i] = f
 end
 
--- ============================================
 -- КАРТОЧКИ
--- ============================================
 local function createAeroCard(parent, title, yPos, defaultOn, callback)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, -12, 0, 54)
@@ -377,9 +369,7 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
     end)
 end
 
--- ============================================
 -- FEATURES
--- ============================================
 local featuresContent = contents[1]
 featuresContent.CanvasSize = UDim2.new(0, 0, 0, 240)
 local fLabel = Instance.new("TextLabel")
@@ -397,9 +387,7 @@ createAeroCard(featuresContent, "Auto Click", 50, false)
 createAeroCard(featuresContent, "Fast Attack", 110, true)
 createAeroCard(featuresContent, "Auto Collect", 170, false)
 
--- ============================================
 -- SETTINGS
--- ============================================
 local settingsContent = contents[2]
 settingsContent.CanvasSize = UDim2.new(0, 0, 0, 280)
 
@@ -631,7 +619,7 @@ vLabel.Font = Enum.Font.GothamBold
 vLabel.TextXAlignment = Enum.TextXAlignment.Center
 vLabel.Parent = visualsContent
 
--- ===== СВИТЧЕР RESOURCE ESP =====
+-- СВИТЧЕР RESOURCE ESP
 local espCard = Instance.new("Frame")
 espCard.Size = UDim2.new(1, -12, 0, 54)
 espCard.Position = UDim2.new(0, 6, 0, 50)
@@ -705,9 +693,7 @@ espToggle.InputBegan:Connect(function(input)
     end
 end)
 
--- ============================================
 -- ПОЛЗУНОК ESP DISTANCE
--- ============================================
 local espDistance = settings.ESPDistance or 1000
 
 local sliderCard = Instance.new("Frame")
@@ -850,55 +836,44 @@ for i, btn in pairs(btnObjects) do
 end
 
 -- ============================================
--- ЗАГРУЗКА МОДУЛЕЙ
+-- ЗАГРУЗКА МОДУЛЕЙ ПО ID
 -- ============================================
-local currentGameName = game.Name
+local currentId = game.PlaceId
 
-if string.find(currentGameName, "A desrt") or string.find(currentGameName, "A Desrt") or string.find(currentGameName, "desrt") then
-    print("[ASTRA] Загружаю модуль A Desrt...")
+if currentId == 107467295209358 then
+    print("[ASTRA] Загружаю модуль A Desrt (ID: " .. currentId .. ")")
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Desrt.lua"))()
-elseif string.find(currentGameName, "A Long Road") or string.find(currentGameName, "Long Road") then
-    print("[ASTRA] Загружаю модуль A Long Road...")
+elseif currentId == 18934709778 then
+    print("[ASTRA] Загружаю модуль A Long Road (ID: " .. currentId .. ")")
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Long_Road.lua"))()
 else
-    print("[ASTRA] Игра не из списка поддержки: " .. currentGameName)
+    print("[ASTRA] Игра не из списка поддержки: " .. currentId)
 end
 
 getgenv().AstraHubLoaded = true
-print("[ASTRA] Главный каркас загружен! Игра: " .. currentGameName)
+print("[ASTRA] Главный каркас загружен! ID игры: " .. currentId)
 
 -- ============================================
--- АВТО-ЗАПУСК ESP (НАДЁЖНЫЙ МЕТОД)
+-- АВТО-ЗАПУСК ESP (ПО НАЗВАНИЮ, А НЕ ПО ID)
 -- ============================================
 task.spawn(function()
     task.wait(3)
-    local gameName = game.Name
     
-    if string.find(gameName, "A desrt") or string.find(gameName, "A Desrt") or string.find(gameName, "desrt") then
-        print("[ASTRA] Найдена игра: A desrt!")
-        getgenv().espEnabled = true
-        if getgenv().toggleESP then
-            getgenv().toggleESP(true)
-        end
-    elseif string.find(gameName, "A Long Road") or string.find(gameName, "Long Road") then
-        print("[ASTRA] Найдена игра: A Long Road!")
-        getgenv().espEnabled = true
-        if getgenv().toggleESP then
-            getgenv().toggleESP(true)
-        end
-    else
-        -- Запасной вариант: если название не совпало, пробуем через интернет
-        local success, realName = pcall(function()
-            return MarketplaceService:GetProductInfo(game.PlaceId).Name
-        end)
-        if success and (string.find(realName, "desrt") or string.find(realName, "Desrt")) then
-            print("[ASTRA] Найдена игра (по ID): A desrt!")
+    local success, gameName = pcall(function()
+        return MarketplaceService:GetProductInfo(game.PlaceId).Name
+    end)
+    
+    if success and gameName then
+        print("[ASTRA] Название игры: " .. gameName)
+        
+        if string.find(gameName, "A desrt") or string.find(gameName, "A Desrt") or string.find(gameName, "desrt") then
+            print("[ASTRA] Найдена игра: A desrt! Запускаю ESP...")
             getgenv().espEnabled = true
             if getgenv().toggleESP then
                 getgenv().toggleESP(true)
             end
-        elseif success and string.find(realName, "Long Road") then
-            print("[ASTRA] Найдена игра (по ID): A Long Road!")
+        elseif string.find(gameName, "A Long Road") or string.find(gameName, "Long Road") then
+            print("[ASTRA] Найдена игра: A Long Road! Запускаю ESP...")
             getgenv().espEnabled = true
             if getgenv().toggleESP then
                 getgenv().toggleESP(true)
@@ -906,5 +881,7 @@ task.spawn(function()
         else
             print("[ASTRA] Игра не распознана: " .. gameName)
         end
+    else
+        print("[ASTRA] Не удалось получить название игры, ID: " .. game.PlaceId)
     end
 end)
