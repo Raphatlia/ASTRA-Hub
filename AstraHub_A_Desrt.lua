@@ -1,22 +1,24 @@
--- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT (ФИНАЛЬНЫЙ ДЕТЕКТОР, БЕЗ ОШИБОК)
+-- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT (ТОЧНЫЙ ДЕТЕКТОР ПО КНОПКЕ ВЫХОДА)
 local Module = {}
 
 -- ============================================
--- ПОИСК УНИКАЛЬНЫХ КНОПОК МЕНЮ (БЕЗ "Sandbox+")
+-- ТОЧНЫЙ ДЕТЕКТОР: A DESRT НЕ ИМЕЕТ КНОПКИ ВЫХОДА
 -- ============================================
 local function IsDesrtGame()
+    local hasPlay = false
+    local hasExit = false
+    
     for _, obj in pairs(game:GetDescendants()) do
-        if obj.Name == "Play" then return true end
-        if obj.Name == "Changelog" then return true end
-        if obj.Name == "Shop" then return true end
-        if obj.Name == "Join" then return true end
-        if obj.Name == "Create" then return true end
-        if obj.Name == "Exit" then return true end
-        if obj.Name == "Ignition" then return true end
-        if obj.Name == "Sandbox" then return true end  -- <-- ИСПРАВЛЕНО
-        if obj.Name == "Open Script" then return true end
+        if obj.Name == "Play" then
+            hasPlay = true
+        end
+        if obj.Name == "Leave" or obj.Name == "Exit" then
+            hasExit = true
+        end
     end
-    return false
+    
+    -- Если есть Play, но нет Leave/Exit — это A Desrt
+    return hasPlay and not hasExit
 end
 
 -- Если игра не A Desrt — отключаем модуль
@@ -25,7 +27,7 @@ if not IsDesrtGame() then
     return Module
 end
 
-print("[ASTRA] A Desert обнаружена по кнопкам меню! Загружаю функции...")
+print("[ASTRA] A Desert обнаружена! (Кнопка выхода не найдена). Загружаю функции...")
 
 -- ============================================
 -- ВЕСЬ ФУНКЦИОНАЛ (ESP, АВТО-СБОР, СПИД-БУСТ)
