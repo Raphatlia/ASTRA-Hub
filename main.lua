@@ -1,4 +1,4 @@
--- ASTRA HUB V3.0 — МОДУЛЬНАЯ АРХИТЕКТУРА (СОБЫТИЯ + ШАБЛОНЫ)
+-- ASTRA HUB V3.0 — МОДУЛЬНАЯ АРХИТЕКТУРА (ИСПРАВЛЕННАЯ ЗАГРУЗКА)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -10,7 +10,7 @@ ScreenGui.Parent = LP:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 -- ============================================
--- ГЛОБАЛЬНАЯ СИСТЕМА СОБЫТИЙ (ДЛЯ МОДУЛЕЙ)
+-- ГЛОБАЛЬНАЯ СИСТЕМА СОБЫТИЙ
 -- ============================================
 local Events = {}
 function Events:Fire(name, ...)
@@ -305,7 +305,7 @@ for i = 1, #btnData do
 end
 
 -- ============================================
--- ШАБЛОН КАРТОЧКИ (ДЛЯ БЫСТРОГО СОЗДАНИЯ)
+-- ШАБЛОН КАРТОЧКИ
 -- ============================================
 templateCard = Instance.new("Frame")
 templateCard.Size = UDim2.new(1, -12, 0, 54)
@@ -354,7 +354,7 @@ tcCircleCorner.CornerRadius = UDim.new(1, 0)
 tcCircleCorner.Parent = tcCircle
 
 -- ============================================
--- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ (ЧЕРЕЗ КЛОН)
+-- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ
 -- ============================================
 local function createAeroCard(parent, title, yPos, defaultOn, callback)
     local card = templateCard:Clone()
@@ -392,7 +392,7 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
 end
 
 -- ============================================
--- FEATURES (СОБЫТИЯ)
+-- FEATURES
 -- ============================================
 local featuresContent = contents[1]
 featuresContent.CanvasSize = UDim2.new(0, 0, 0, 280)
@@ -674,18 +674,28 @@ for i, btn in pairs(btnObjects) do
 end
 
 -- ============================================
--- АВТО-ЗАПУСК ESP (ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ)
+-- ЗАГРУЗКА МОДУЛЕЙ (БЕЗ PCALL)
 -- ============================================
-task.spawn(function()
-    task.wait(3)
-    local gameName = game.Name
-    if string.find(gameName, "desrt") or string.find(gameName, "Desert") then
-        print("[ASTRA] Найдена A Desert! Запускаю ESP...")
-        toggleESP(true)
-        print("[ASTRA] A Desert режим активирован!")
-    else
-        print("[ASTRA] Игра не A Desert.")
+local function loadModule(name)
+    local module = game.ReplicatedStorage:FindFirstChild(name)
+    if module then
+        local loaded = require(module)
+        if loaded and type(loaded) == "table" then
+            print("[ASTRA] Модуль " .. name .. " успешно загружен!")
+            return loaded
+        end
     end
-end)
+    print("[ASTRA] Модуль " .. name .. " не найден.")
+    return nil
+end
+
+-- Загружаем модули
+local desrtModule = loadModule("AstraHub_A_Desrt")
+local longRoadModule = loadModule("AstraHub_A_Long_Road")
+
+-- Если ни один модуль не загрузился — игра не поддерживается
+if not desrtModule and not longRoadModule then
+    print("[ASTRA] Игра не поддерживается. Модули не загружены.")
+end
 
 print("ASTRA HUB V3.0 — МОДУЛЬНАЯ АРХИТЕКТУРА ЗАГРУЖЕНА!")
