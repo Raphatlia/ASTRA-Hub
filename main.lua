@@ -1,38 +1,24 @@
--- ASTRA HUB V1.0 — ФИНАЛ (АВТО-ЗАПУСК ПО НАЗВАНИЮ)
+--- ASTRA HUB V2.0 — С РАЗМЫТИЕМ (ИСПРАВЛЕННЫЙ БЛЮР)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local MarketplaceService = game:GetService("MarketplaceService")
 
--- ============================================
--- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
--- ============================================
-getgenv().AstraHubLoaded = false
-getgenv().espEnabled = false
-getgenv().espThread = nil
-getgenv().espDistance = 1000
-
--- ============================================
--- GUI (МЕНЮ)
--- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AstraGUI"
 ScreenGui.Parent = LP:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
--- ===== НАСТРОЙКИ =====
-local function LoadSettings()
-    if not shared.AstraSettings then
-        shared.AstraSettings = {
-            Theme = "Astral",
-            Transparent = false,
-            ESPDistance = 1000,
-        }
-    end
-    return shared.AstraSettings
-end
-local settings = LoadSettings()
+-- ============================================
+-- НАСТРОЙКИ
+-- ============================================
+local settings = {
+    Theme = "Astral",
+    Transparent = false,
+    ESPDistance = 1000,
+    AutoCollect = false,
+    SpeedBoost = false,
+}
 
 local themeColorsList = {
     Astral = Color3.fromRGB(25, 15, 45),
@@ -41,9 +27,29 @@ local themeColorsList = {
 }
 
 -- ============================================
+-- РАЗМЫТИЕ ФОНА (BLUR) — ПРАВИЛЬНО
+-- ============================================
+local blur = Instance.new("BlurEffect")
+blur.Size = 0
+blur.Parent = game:GetService("Lighting")
+
+local function setBlur(size)
+    TweenService:Create(blur, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = size
+    }):Play()
+end
+
+-- ============================================
+-- ПЕРЕМЕННЫЕ ДЛЯ АНИМАЦИИ
+-- ============================================
+local isOpen = false
+local mainFrame = nil
+local floatingBtn = nil
+
+-- ============================================
 -- ПЛАВАЮЩАЯ КНОПКА
 -- ============================================
-local floatingBtn = Instance.new("TextButton")
+floatingBtn = Instance.new("TextButton")
 floatingBtn.Size = UDim2.new(0, 180, 0, 46)
 floatingBtn.Position = UDim2.new(0.5, -90, 0.05, 0)
 floatingBtn.AnchorPoint = Vector2.new(0.5, 0)
@@ -55,7 +61,7 @@ floatingBtn.Text = "Open Script"
 floatingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 floatingBtn.TextSize = 16
 floatingBtn.Font = Enum.Font.GothamBold
-floatingBtn.TextXAlignment = Enum.TextXAlignment.Left
+floatingBtn.TextXAlignment = Enum.TextXAlignment.Center
 floatingBtn.Visible = true
 floatingBtn.Active = true
 floatingBtn.Selectable = true
@@ -66,29 +72,59 @@ local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(1, 0)
 btnCorner.Parent = floatingBtn
 
-local dragIcon = Instance.new("TextLabel")
-dragIcon.Size = UDim2.new(0, 30, 1, 0)
-dragIcon.Position = UDim2.new(0, 10, 0, 0)
-dragIcon.BackgroundTransparency = 1
-dragIcon.Text = "⠿"
-dragIcon.TextColor3 = Color3.fromRGB(180, 175, 210)
-dragIcon.TextSize = 20
-dragIcon.Font = Enum.Font.GothamBold
-dragIcon.TextXAlignment = Enum.TextXAlignment.Center
-dragIcon.TextYAlignment = Enum.TextYAlignment.Center
-dragIcon.Parent = floatingBtn
-
+-- ============================================
+-- ФУНКЦИИ ОТКРЫТИЯ/ЗАКРЫТИЯ
+-- ============================================
 local function openMenu()
-    local menu = ScreenGui:FindFirstChild("mainFrame")
-    if menu then
-        menu.Visible = true
-        floatingBtn.Visible = false
-        menu.Size = UDim2.new(0, 0, 0, 0)
-        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        local openTween = TweenService:Create(menu, tweenInfo, {Size = UDim2.new(0, 380, 0, 320)})
-        openTween:Play()
-    end
+    if not mainFrame then return end
+    isOpen = true
+    floatingBtn.Visible = false
+    mainFrame.Visible = true
+    
+    -- Включаем размытие
+    setBlur(8)
+    
+    -- Анимация появления
+    mainFrame.Size = UDim2.new(0, 0, 0, 0)
+    mainFrame.BackgroundTransparency = 1
+    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    local openTween = TweenService:Create(mainFrame, tweenInfo, {
+        Size = UDim2.new(0, 380, 0, 320),
+        BackgroundTransparency = settings.Transparent and 0.2 or 0.1
+    })
+    openTween:Play()
 end
+
+local function closeMenu()
+    if not mainFrame then return end
+    isOpen = false
+    
+    -- Анимация закрытия
+    local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+    local closeTween = TweenService:Create(mainFrame, tweenInfo, {
+        Size = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1
+    })
+    closeTween:Play()
+    closeTween.Completed:Wait()
+    
+    mainFrame.Visible = false
+    floatingBtn.Visible = true
+    
+    -- ВЫКЛЮЧАЕМ РАЗМЫТИЕ
+    setBlur(0)
+end
+
+-- Горячая клавиша RightShift
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        if isOpen then
+            closeMenu()
+        else
+            openMenu()
+        end
+    end
+end)
 
 floatingBtn.MouseButton1Click:Connect(openMenu)
 floatingBtn.TouchTap:Connect(openMenu)
@@ -96,15 +132,14 @@ floatingBtn.TouchTap:Connect(openMenu)
 -- ============================================
 -- ОСНОВНОЕ ОКНО
 -- ============================================
-local mainFrame = Instance.new("Frame")
+mainFrame = Instance.new("Frame")
 mainFrame.Name = "mainFrame"
-mainFrame.Size = UDim2.new(0, 380, 0, 320)
+mainFrame.Size = UDim2.new(0, 0, 0, 0)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 mainFrame.BackgroundColor3 = themeColorsList[settings.Theme]
-mainFrame.BackgroundTransparency = settings.Transparent and 0.2 or 0.1
-mainFrame.BorderSizePixel = 1
-mainFrame.BorderColor3 = Color3.fromRGB(60, 50, 100)
+mainFrame.BackgroundTransparency = 1
+mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Visible = false
 mainFrame.Parent = ScreenGui
@@ -113,11 +148,14 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 16)
 mainCorner.Parent = mainFrame
 
+-- ============================================
 -- ШАПКА
+-- ============================================
 local header = Instance.new("Frame")
 header.Size = UDim2.new(1, 0, 0, 44)
 header.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
 header.BackgroundTransparency = 0.3
+header.BorderSizePixel = 0
 header.Parent = mainFrame
 local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0, 16)
@@ -148,28 +186,15 @@ versionCorner.Parent = versionTag
 local versionText = Instance.new("TextLabel")
 versionText.Size = UDim2.new(1, 0, 1, 0)
 versionText.BackgroundTransparency = 1
-versionText.Text = "V1.0"
+versionText.Text = "V2.0"
 versionText.TextColor3 = Color3.fromRGB(255, 255, 255)
 versionText.TextSize = 11
 versionText.Font = Enum.Font.GothamBold
 versionText.Parent = versionTag
 
-task.spawn(function()
-    while versionTag and versionTag.Parent do
-        local tween1 = TweenService:Create(versionTag, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-            BackgroundColor3 = Color3.fromRGB(180, 80, 255)
-        })
-        local tween2 = TweenService:Create(versionTag, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-            BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-        })
-        tween1:Play()
-        tween1.Completed:Wait()
-        tween2:Play()
-        tween2.Completed:Wait()
-    end
-end)
-
+-- ============================================
 -- MACOS КНОПКИ
+-- ============================================
 local btnRed = Instance.new("TextButton")
 btnRed.Size = UDim2.new(0, 12, 0, 12)
 btnRed.Position = UDim2.new(1, -55, 0.5, 0)
@@ -195,8 +220,7 @@ local btnYellowCorner = Instance.new("UICorner")
 btnYellowCorner.CornerRadius = UDim.new(1, 0)
 btnYellowCorner.Parent = btnYellow
 btnYellow.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    floatingBtn.Visible = true
+    closeMenu()
 end)
 
 local btnGreen = Instance.new("TextButton")
@@ -214,7 +238,9 @@ btnGreen.MouseButton1Click:Connect(function()
     mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 end)
 
+-- ============================================
 -- ПЕРЕТАСКИВАНИЕ МЕНЮ
+-- ============================================
 local dragging = false
 local dragInput, mousePos, framePos
 mainFrame.InputBegan:Connect(function(input)
@@ -241,11 +267,14 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
+-- ============================================
 -- ЛЕВАЯ ПАНЕЛЬ
+-- ============================================
 local leftPanel = Instance.new("Frame")
 leftPanel.Size = UDim2.new(0, 100, 1, -44)
 leftPanel.Position = UDim2.new(0, 0, 0, 44)
 leftPanel.BackgroundTransparency = 1
+leftPanel.BorderSizePixel = 0
 leftPanel.ClipsDescendants = true
 leftPanel.Parent = mainFrame
 
@@ -256,11 +285,12 @@ for i = 1, #btnData do
     btn.Size = UDim2.new(0.9, 0, 0, 28)
     btn.Position = UDim2.new(0.05, 0, 0, 10 + (i-1) * 36)
     btn.BackgroundTransparency = 1
+    btn.BorderSizePixel = 0
     btn.Text = btnData[i]
     btn.TextColor3 = Color3.fromRGB(180, 180, 200)
     btn.TextSize = 14
     btn.Font = Enum.Font.Gotham
-    btn.BorderSizePixel = 0
+    btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.Parent = leftPanel
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 6)
@@ -268,11 +298,14 @@ for i = 1, #btnData do
     btnObjects[i] = btn
 end
 
+-- ============================================
 -- ПРАВАЯ ПАНЕЛЬ
+-- ============================================
 local rightPanel = Instance.new("Frame")
 rightPanel.Size = UDim2.new(1, -110, 1, -44)
 rightPanel.Position = UDim2.new(0, 105, 0, 44)
 rightPanel.BackgroundTransparency = 1
+rightPanel.BorderSizePixel = 0
 rightPanel.Parent = mainFrame
 
 local contents = {}
@@ -280,6 +313,7 @@ for i = 1, #btnData do
     local f = Instance.new("ScrollingFrame")
     f.Size = UDim2.new(1, 0, 1, 0)
     f.BackgroundTransparency = 1
+    f.BorderSizePixel = 0
     f.CanvasSize = UDim2.new(0, 0, 0, 0)
     f.ScrollBarThickness = 3
     f.ScrollBarImageColor3 = Color3.fromRGB(80, 40, 140)
@@ -288,35 +322,20 @@ for i = 1, #btnData do
     contents[i] = f
 end
 
+-- ============================================
 -- КАРТОЧКИ
+-- ============================================
 local function createAeroCard(parent, title, yPos, defaultOn, callback)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, -12, 0, 54)
     card.Position = UDim2.new(0, 6, 0, yPos)
     card.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
     card.BackgroundTransparency = 0.3
-    card.BorderSizePixel = 1
-    card.BorderColor3 = Color3.fromRGB(255, 255, 255, 0.1)
+    card.BorderSizePixel = 0
     card.Parent = parent
     local cardCorner = Instance.new("UICorner")
     cardCorner.CornerRadius = UDim.new(0, 10)
     cardCorner.Parent = card
-
-    local shadow = Instance.new("Frame")
-    shadow.Size = UDim2.new(1, 0, 1, 0)
-    shadow.Position = UDim2.new(0, 0, 0, 2)
-    shadow.BackgroundTransparency = 1
-    shadow.BorderSizePixel = 1
-    shadow.BorderColor3 = Color3.fromRGB(20, 15, 35)
-    shadow.ZIndex = -1
-    shadow.Parent = card
-    local shadowCorner = Instance.new("UICorner")
-    shadowCorner.CornerRadius = UDim.new(0, 10)
-    shadowCorner.Parent = shadow
-
-    local cardBlur = Instance.new("BlurEffect")
-    cardBlur.Parent = card
-    cardBlur.Size = 2
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6, 0, 1, 0)
@@ -369,9 +388,12 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
     end)
 end
 
+-- ============================================
 -- FEATURES
+-- ============================================
 local featuresContent = contents[1]
-featuresContent.CanvasSize = UDim2.new(0, 0, 0, 240)
+featuresContent.CanvasSize = UDim2.new(0, 0, 0, 280)
+
 local fLabel = Instance.new("TextLabel")
 fLabel.Size = UDim2.new(1, 0, 0, 35)
 fLabel.Position = UDim2.new(0, 0, 0, 5)
@@ -383,13 +405,91 @@ fLabel.Font = Enum.Font.GothamBold
 fLabel.TextXAlignment = Enum.TextXAlignment.Center
 fLabel.Parent = featuresContent
 
-createAeroCard(featuresContent, "Auto Click", 50, false)
-createAeroCard(featuresContent, "Fast Attack", 110, true)
-createAeroCard(featuresContent, "Auto Collect", 170, false)
+-- АВТО-СБОР
+local autoCollectEnabled = false
+local collectThread = nil
 
+local function InteractItem(item)
+    if not item then return false end
+    local prompt = item:FindFirstChildOfClass("ProximityPrompt") or item:FindFirstChild("ProximityPrompt", true)
+    if prompt and prompt.Enabled then
+        local name = string.lower(item.Name)
+        local action = "tap"
+        if string.find(name, "door") then action = "swipe" end
+        local heavyItems = {"engine", "radiator", "battery", "tire", "wheel", "fuel", "can", "hood", "fender", "bumper", "barrel"}
+        for _, heavy in pairs(heavyItems) do
+            if string.find(name, heavy) then action = "hold" break end
+        end
+        if action == "tap" then fireproximityprompt(prompt, 0) return true
+        elseif action == "hold" then fireproximityprompt(prompt, 0.8) return true
+        elseif action == "swipe" then
+            pcall(function() fireproximityprompt(prompt, 0) task.wait(0.1) fireproximityprompt(prompt, 0) end)
+            return true
+        end
+    end
+    return false
+end
+
+local function autoCollectLoop()
+    collectThread = task.spawn(function()
+        while autoCollectEnabled do
+            task.wait(0.3)
+            local char = LP.Character if not char then continue end
+            local root = char:FindFirstChild("HumanoidRootPart") if not root then continue end
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if not autoCollectEnabled then break end
+                if obj:IsA("BasePart") and obj.Parent and obj.Parent:IsA("Model") then
+                    local model = obj.Parent
+                    local dist = (root.Position - model:GetPivot().Position).Magnitude
+                    if dist <= 5 then
+                        if InteractItem(model) then task.wait(0.2) end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+createAeroCard(featuresContent, "Auto Collect", 50, false, function(state)
+    autoCollectEnabled = state
+    if state then autoCollectLoop() print("[ASTRA] Auto Collect: ON")
+    else if collectThread then task.cancel(collectThread) collectThread = nil end print("[ASTRA] Auto Collect: OFF") end
+end)
+
+-- СПИД-БУСТ
+local speedBoostEnabled = false
+
+local function ApplySpeedBoost(state)
+    speedBoostEnabled = state
+    local car = workspace:FindFirstChild("car")
+    if not car then return end
+    local throttle = car.Values and car.Values:FindFirstChild("Throttle")
+    if not throttle then return end
+    if state then
+        local conn = throttle:GetPropertyChangedSignal("Value"):Connect(function()
+            if throttle.Value > 0 then
+                throttle.Value = math.clamp(throttle.Value * 2, 0, 1)
+            end
+        end)
+        print("[ASTRA] Speed Boost: ON")
+    else
+        print("[ASTRA] Speed Boost: OFF")
+    end
+end
+
+createAeroCard(featuresContent, "Speed Boost", 110, false, function(state)
+    ApplySpeedBoost(state)
+end)
+
+createAeroCard(featuresContent, "Fast Attack", 170, false, function(state)
+    print("[ASTRA] Fast Attack: " .. (state and "ON" or "OFF"))
+end)
+
+-- ============================================
 -- SETTINGS
+-- ============================================
 local settingsContent = contents[2]
-settingsContent.CanvasSize = UDim2.new(0, 0, 0, 280)
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 220)
 
 local settingsLabel = Instance.new("TextLabel")
 settingsLabel.Size = UDim2.new(1, 0, 0, 35)
@@ -408,16 +508,11 @@ transCard.Size = UDim2.new(1, -12, 0, 54)
 transCard.Position = UDim2.new(0, 6, 0, 50)
 transCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
 transCard.BackgroundTransparency = 0.3
-transCard.BorderSizePixel = 1
-transCard.BorderColor3 = Color3.fromRGB(255, 255, 255, 0.1)
+transCard.BorderSizePixel = 0
 transCard.Parent = settingsContent
 local transCardCorner = Instance.new("UICorner")
 transCardCorner.CornerRadius = UDim.new(0, 10)
 transCardCorner.Parent = transCard
-
-local transBlur = Instance.new("BlurEffect")
-transBlur.Parent = transCard
-transBlur.Size = 2
 
 local transLabel = Instance.new("TextLabel")
 transLabel.Size = UDim2.new(0.5, 0, 1, 0)
@@ -463,9 +558,9 @@ local function UpdateTransparency()
     else
         transToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
         transCircle.Position = UDim2.new(0, 3, 0.5, 0)
-        mainFrame.BackgroundTransparency = 0.15
+        mainFrame.BackgroundTransparency = 0.1
     end
-    shared.AstraSettings.Transparent = isTransparent
+    settings.Transparent = isTransparent
 end
 UpdateTransparency()
 transToggle.InputBegan:Connect(function(input)
@@ -482,17 +577,12 @@ themeCard.Size = UDim2.new(1, -12, 0, 54)
 themeCard.Position = UDim2.new(0, 6, 0, 110)
 themeCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
 themeCard.BackgroundTransparency = 0.3
-themeCard.BorderSizePixel = 1
-themeCard.BorderColor3 = Color3.fromRGB(255, 255, 255, 0.1)
+themeCard.BorderSizePixel = 0
 themeCard.ClipsDescendants = true
 themeCard.Parent = settingsContent
 local themeCardCorner = Instance.new("UICorner")
 themeCardCorner.CornerRadius = UDim.new(0, 10)
 themeCardCorner.Parent = themeCard
-
-local themeBlur = Instance.new("BlurEffect")
-themeBlur.Parent = themeCard
-themeBlur.Size = 2
 
 local themeHeader = Instance.new("TextButton")
 themeHeader.Size = UDim2.new(1, 0, 0, 54)
@@ -521,6 +611,7 @@ local themeList = Instance.new("Frame")
 themeList.Size = UDim2.new(1, 0, 0, 0)
 themeList.Position = UDim2.new(0, 0, 0, 54)
 themeList.BackgroundTransparency = 1
+themeList.BorderSizePixel = 0
 themeList.ClipsDescendants = true
 themeList.Parent = themeCard
 
@@ -532,13 +623,13 @@ for i, opt in pairs(themeOptions) do
     btn.Position = UDim2.new(0, 0, 0, (i-1) * 34)
     btn.BackgroundColor3 = Color3.fromRGB(40, 35, 60)
     btn.BackgroundTransparency = 0
+    btn.BorderSizePixel = 0
     btn.Text = "  " .. opt
     btn.TextColor3 = Color3.fromRGB(220, 220, 240)
     btn.TextSize = 14
     btn.Font = Enum.Font.Gotham
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.TextYAlignment = Enum.TextYAlignment.Center
-    btn.BorderSizePixel = 0
     btn.Parent = themeList
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 6)
@@ -553,7 +644,6 @@ for i, opt in pairs(themeOptions) do
 
     btn.MouseButton1Click:Connect(function()
         settings.Theme = opt
-        shared.AstraSettings.Theme = opt
         themeHeader.Text = "Theme: " .. opt
         mainFrame.BackgroundColor3 = themeColorsList[opt]
         isThemeOpen = false
@@ -576,37 +666,13 @@ themeHeader.MouseButton1Click:Connect(function()
     end
 end)
 
--- ИНФО-КАРТОЧКА
-local infoCard = Instance.new("Frame")
-infoCard.Size = UDim2.new(1, -12, 0, 44)
-infoCard.Position = UDim2.new(0, 6, 0, 230)
-infoCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
-infoCard.BackgroundTransparency = 0.1
-infoCard.BorderSizePixel = 1
-infoCard.BorderColor3 = Color3.fromRGB(60, 50, 90)
-infoCard.Parent = settingsContent
-local infoCardCorner = Instance.new("UICorner")
-infoCardCorner.CornerRadius = UDim.new(0, 10)
-infoCardCorner.Parent = infoCard
-
-local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(1, 0, 1, 0)
-infoLabel.BackgroundTransparency = 1
-infoLabel.Text = "v1.0 | by: CMarmoki"
-infoLabel.TextColor3 = Color3.fromRGB(150, 150, 180)
-infoLabel.TextSize = 12
-infoLabel.Font = Enum.Font.Gotham
-infoLabel.TextXAlignment = Enum.TextXAlignment.Center
-infoLabel.TextYAlignment = Enum.TextYAlignment.Center
-infoLabel.Parent = infoCard
-
-settingsContent.CanvasSize = UDim2.new(0, 0, 0, 280)
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 220)
 
 -- ============================================
--- VISUALS
+-- VISUALS (ESP)
 -- ============================================
 local visualsContent = contents[3]
-visualsContent.CanvasSize = UDim2.new(0, 0, 0, 250)
+visualsContent.CanvasSize = UDim2.new(0, 0, 0, 150)
 
 local vLabel = Instance.new("TextLabel")
 vLabel.Size = UDim2.new(1, 0, 0, 35)
@@ -619,181 +685,107 @@ vLabel.Font = Enum.Font.GothamBold
 vLabel.TextXAlignment = Enum.TextXAlignment.Center
 vLabel.Parent = visualsContent
 
--- СВИТЧЕР RESOURCE ESP
-local espCard = Instance.new("Frame")
-espCard.Size = UDim2.new(1, -12, 0, 54)
-espCard.Position = UDim2.new(0, 6, 0, 50)
-espCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
-espCard.BackgroundTransparency = 0.3
-espCard.BorderSizePixel = 1
-espCard.BorderColor3 = Color3.fromRGB(255, 255, 255, 0.1)
-espCard.Parent = visualsContent
-local espCardCorner = Instance.new("UICorner")
-espCardCorner.CornerRadius = UDim.new(0, 10)
-espCardCorner.Parent = espCard
+local espEnabled = false
+local espThread = nil
+local espDistance = 1000
 
-local espBlur = Instance.new("BlurEffect")
-espBlur.Parent = espCard
-espBlur.Size = 2
+local function createItemESP(instance, text, icon)
+    if instance:FindFirstChild("ESP_Item") then return end
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "ESP_Item"
+    gui.Size = UDim2.new(0, 100, 0, 28)
+    gui.StudsOffset = Vector3.new(0, 1.8, 0)
+    gui.AlwaysOnTop = true
+    gui.Parent = instance
 
-local espLabel = Instance.new("TextLabel")
-espLabel.Size = UDim2.new(0.6, 0, 1, 0)
-espLabel.Position = UDim2.new(0, 16, 0, 0)
-espLabel.BackgroundTransparency = 1
-espLabel.Text = "Resource ESP"
-espLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-espLabel.TextSize = 16
-espLabel.Font = Enum.Font.GothamBold
-espLabel.TextXAlignment = Enum.TextXAlignment.Left
-espLabel.Parent = espCard
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 15, 45)
+    frame.BackgroundTransparency = 0.2
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    local fCorner = Instance.new("UICorner")
+    fCorner.CornerRadius = UDim.new(0, 6)
+    fCorner.Parent = frame
 
-local espToggle = Instance.new("Frame")
-espToggle.Size = UDim2.new(0, 50, 0, 28)
-espToggle.Position = UDim2.new(1, -14, 0.5, 0)
-espToggle.AnchorPoint = Vector2.new(1, 0.5)
-espToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-espToggle.BackgroundTransparency = 0.1
-espToggle.BorderSizePixel = 0
-espToggle.Parent = espCard
-local espToggleCorner = Instance.new("UICorner")
-espToggleCorner.CornerRadius = UDim.new(1, 0)
-espToggleCorner.Parent = espToggle
+    local nameTag = Instance.new("TextLabel")
+    nameTag.Size = UDim2.new(1, 0, 1, 0)
+    nameTag.BackgroundTransparency = 1
+    nameTag.Text = icon .. " " .. text
+    nameTag.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameTag.TextSize = 11
+    nameTag.Font = Enum.Font.GothamBold
+    nameTag.Parent = frame
+end
 
-local espCircle = Instance.new("Frame")
-espCircle.Size = UDim2.new(0, 22, 0, 22)
-espCircle.Position = UDim2.new(0, 3, 0.5, 0)
-espCircle.AnchorPoint = Vector2.new(0, 0.5)
-espCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-espCircle.BackgroundTransparency = 0.05
-espCircle.BorderSizePixel = 0
-espCircle.Parent = espToggle
-local espCircleCorner = Instance.new("UICorner")
-espCircleCorner.CornerRadius = UDim.new(1, 0)
-espCircleCorner.Parent = espCircle
+local function clearESP()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name == "ESP_Item" then v:Destroy() end
+    end
+end
 
-local espOn = false
-espToggle.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        espOn = not espOn
-        if espOn then
-            espToggle.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-            espCircle.Position = UDim2.new(1, -25, 0.5, 0)
-            getgenv().espEnabled = true
-            if getgenv().toggleESP then
-                getgenv().toggleESP(true)
-            end
-        else
-            espToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-            espCircle.Position = UDim2.new(0, 3, 0.5, 0)
-            getgenv().espEnabled = false
-            if getgenv().toggleESP then
-                getgenv().toggleESP(false)
+local function runItemESP()
+    task.spawn(function()
+        while espEnabled do
+            task.wait(0.4)
+            if not espEnabled then break end
+            local playerPos = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            if not playerPos then continue end
+            local espCount = 0
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if not espEnabled then break end
+                if espCount >= 35 then break end
+                if obj:IsA("BasePart") and obj.Parent and obj.Parent:IsA("Model") then
+                    local model = obj.Parent
+                    local name = string.lower(model.Name)
+                    local objPos = obj.Position
+                    local distance = (playerPos.Position - objPos).Magnitude
+                    if distance > espDistance then continue end
+                    if model == LP.Character then continue end
+                    local isResource = false
+                    local icon = "📦"
+                    if string.find(name, "gas") or string.find(name, "fuel") or string.find(name, "jerry") or string.find(name, "barrel") or string.find(name, "oil") then
+                        isResource = true; icon = "⛽"
+                    elseif string.find(name, "food") or string.find(name, "can") or string.find(name, "bandage") or string.find(name, "med") or string.find(name, "water") then
+                        isResource = true; icon = "🥫"
+                    elseif string.find(name, "wheel") or string.find(name, "tire") then
+                        isResource = true; icon = "⚙️"
+                    elseif string.find(name, "part") or string.find(name, "engine") or string.find(name, "motor") or string.find(name, "battery") or string.find(name, "radiator") or string.find(name, "scrap") then
+                        isResource = true; icon = "🔧"
+                    elseif string.find(name, "gun") or string.find(name, "rifle") or string.find(name, "shotgun") or string.find(name, "weapon") then
+                        isResource = true; icon = "🔫"
+                    end
+                    if isResource then
+                        createItemESP(model, model.Name, icon)
+                        espCount = espCount + 1
+                    end
+                end
             end
         end
+    end)
+end
+
+local function toggleESP(state)
+    espEnabled = state
+    if espEnabled then
+        clearESP()
+        espThread = task.spawn(runItemESP)
+        print("[ASTRA] ESP включён")
+    else
+        if espThread then
+            task.cancel(espThread)
+            espThread = nil
+        end
+        clearESP()
+        print("[ASTRA] ESP выключен")
     end
+end
+
+createAeroCard(visualsContent, "Resource ESP", 50, false, function(state)
+    toggleESP(state)
 end)
 
--- ПОЛЗУНОК ESP DISTANCE
-local espDistance = settings.ESPDistance or 1000
-
-local sliderCard = Instance.new("Frame")
-sliderCard.Size = UDim2.new(1, -12, 0, 64)
-sliderCard.Position = UDim2.new(0, 6, 0, 110)
-sliderCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
-sliderCard.BackgroundTransparency = 0.3
-sliderCard.BorderSizePixel = 1
-sliderCard.BorderColor3 = Color3.fromRGB(255, 255, 255, 0.1)
-sliderCard.Parent = visualsContent
-local sliderCardCorner = Instance.new("UICorner")
-sliderCardCorner.CornerRadius = UDim.new(0, 10)
-sliderCardCorner.Parent = sliderCard
-
-local sliderBlur = Instance.new("BlurEffect")
-sliderBlur.Parent = sliderCard
-sliderBlur.Size = 2
-
-local sliderLabel = Instance.new("TextLabel")
-sliderLabel.Size = UDim2.new(0.6, 0, 1, 0)
-sliderLabel.Position = UDim2.new(0, 16, 0, 0)
-sliderLabel.BackgroundTransparency = 1
-sliderLabel.Text = "ESP Distance: " .. espDistance .. "m"
-sliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-sliderLabel.TextSize = 14
-sliderLabel.Font = Enum.Font.GothamBold
-sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-sliderLabel.Parent = sliderCard
-
-local sliderTrack = Instance.new("Frame")
-sliderTrack.Size = UDim2.new(0, 90, 0, 6)
-sliderTrack.Position = UDim2.new(1, -14, 0.5, 0)
-sliderTrack.AnchorPoint = Vector2.new(1, 0.5)
-sliderTrack.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
-sliderTrack.BorderSizePixel = 0
-sliderTrack.Parent = sliderCard
-local trackCorner = Instance.new("UICorner")
-trackCorner.CornerRadius = UDim.new(1, 0)
-trackCorner.Parent = sliderTrack
-
-local sliderFill = Instance.new("Frame")
-sliderFill.Size = UDim2.new(espDistance / 3000, 0, 1, 0)
-sliderFill.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-sliderFill.BorderSizePixel = 0
-sliderFill.Parent = sliderTrack
-local fillCorner = Instance.new("UICorner")
-fillCorner.CornerRadius = UDim.new(1, 0)
-fillCorner.Parent = sliderFill
-
-local sliderKnob = Instance.new("TextButton")
-sliderKnob.Size = UDim2.new(0, 22, 0, 22)
-sliderKnob.Position = UDim2.new(espDistance / 3000, 0, 0.5, 0)
-sliderKnob.AnchorPoint = Vector2.new(0.5, 0.5)
-sliderKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-sliderKnob.BackgroundTransparency = 0.05
-sliderKnob.BorderSizePixel = 2
-sliderKnob.BorderColor3 = Color3.fromRGB(138, 43, 226)
-sliderKnob.Text = ""
-sliderKnob.Parent = sliderTrack
-local knobCorner = Instance.new("UICorner")
-knobCorner.CornerRadius = UDim.new(1, 0)
-knobCorner.Parent = sliderKnob
-
-local isDragging = false
-
-sliderKnob.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isDragging = true
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if not isDragging then return end
-    if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
-    
-    local sliderPos = sliderTrack.AbsolutePosition
-    local sliderSize = sliderTrack.AbsoluteSize
-    local relativeX = math.clamp(input.Position.X - sliderPos.X, 0, sliderSize.X)
-    local newValue = math.floor((relativeX / sliderSize.X) * 3000)
-    newValue = math.clamp(newValue, 100, 3000)
-    
-    if newValue ~= espDistance then
-        espDistance = newValue
-        settings.ESPDistance = espDistance
-        shared.AstraSettings.ESPDistance = espDistance
-        getgenv().espDistance = espDistance
-        
-        sliderLabel.Text = "ESP Distance: " .. espDistance .. "m"
-        sliderFill.Size = UDim2.new(espDistance / 3000, 0, 1, 0)
-        sliderKnob.Position = UDim2.new(espDistance / 3000, 0, 0.5, 0)
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        isDragging = false
-    end
-end)
-
-visualsContent.CanvasSize = UDim2.new(0, 0, 0, 250)
+visualsContent.CanvasSize = UDim2.new(0, 0, 0, 150)
 
 -- ============================================
 -- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
@@ -836,52 +828,18 @@ for i, btn in pairs(btnObjects) do
 end
 
 -- ============================================
--- ЗАГРУЗКА МОДУЛЕЙ ПО ID
--- ============================================
-local currentId = game.PlaceId
-
-if currentId == 107467295209358 then
-    print("[ASTRA] Загружаю модуль A Desrt (ID: " .. currentId .. ")")
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Desrt.lua"))()
-elseif currentId == 18934709778 then
-    print("[ASTRA] Загружаю модуль A Long Road (ID: " .. currentId .. ")")
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Long_Road.lua"))()
-else
-    print("[ASTRA] Игра не из списка поддержки: " .. currentId)
-end
-
-getgenv().AstraHubLoaded = true
-print("[ASTRA] Главный каркас загружен! ID игры: " .. currentId)
-
--- ============================================
--- АВТО-ЗАПУСК ESP (ПО НАЗВАНИЮ, А НЕ ПО ID)
+-- АВТО-ЗАПУСК
 -- ============================================
 task.spawn(function()
     task.wait(3)
-    
-    local success, gameName = pcall(function()
-        return MarketplaceService:GetProductInfo(game.PlaceId).Name
-    end)
-    
-    if success and gameName then
-        print("[ASTRA] Название игры: " .. gameName)
-        
-        if string.find(gameName, "A desrt") or string.find(gameName, "A Desrt") or string.find(gameName, "desrt") then
-            print("[ASTRA] Найдена игра: A desrt! Запускаю ESP...")
-            getgenv().espEnabled = true
-            if getgenv().toggleESP then
-                getgenv().toggleESP(true)
-            end
-        elseif string.find(gameName, "A Long Road") or string.find(gameName, "Long Road") then
-            print("[ASTRA] Найдена игра: A Long Road! Запускаю ESP...")
-            getgenv().espEnabled = true
-            if getgenv().toggleESP then
-                getgenv().toggleESP(true)
-            end
-        else
-            print("[ASTRA] Игра не распознана: " .. gameName)
-        end
+    local gameName = game.Name
+    if string.find(gameName, "desrt") or string.find(gameName, "Desert") then
+        print("[ASTRA] Найдена A Desert! Запускаю ESP...")
+        toggleESP(true)
+        print("[ASTRA] A Desert режим активирован!")
     else
-        print("[ASTRA] Не удалось получить название игры, ID: " .. game.PlaceId)
+        print("[ASTRA] Игра не A Desert.")
     end
 end)
+
+print("ASTRA HUB V2.0 — С РАЗМЫТИЕМ ЗАГРУЖЕН!")
