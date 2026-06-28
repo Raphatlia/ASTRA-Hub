@@ -1,4 +1,4 @@
---- ASTRA HUB V2.0 — С РАЗМЫТИЕМ (ИСПРАВЛЕННЫЙ БЛЮР)
+-- ASTRA HUB V3.0 — МОДУЛЬНАЯ АРХИТЕКТУРА (СОБЫТИЯ + ШАБЛОНЫ)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -10,14 +10,29 @@ ScreenGui.Parent = LP:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 -- ============================================
+-- ГЛОБАЛЬНАЯ СИСТЕМА СОБЫТИЙ (ДЛЯ МОДУЛЕЙ)
+-- ============================================
+local Events = {}
+function Events:Fire(name, ...)
+    if self[name] then
+        for _, callback in pairs(self[name]) do
+            task.spawn(callback, ...)
+        end
+    end
+end
+function Events:Connect(name, callback)
+    if not self[name] then self[name] = {} end
+    table.insert(self[name], callback)
+end
+getgenv().AstraEvents = Events
+
+-- ============================================
 -- НАСТРОЙКИ
 -- ============================================
 local settings = {
     Theme = "Astral",
     Transparent = false,
     ESPDistance = 1000,
-    AutoCollect = false,
-    SpeedBoost = false,
 }
 
 local themeColorsList = {
@@ -27,24 +42,12 @@ local themeColorsList = {
 }
 
 -- ============================================
--- РАЗМЫТИЕ ФОНА (BLUR) — ПРАВИЛЬНО
--- ============================================
-local blur = Instance.new("BlurEffect")
-blur.Size = 0
-blur.Parent = game:GetService("Lighting")
-
-local function setBlur(size)
-    TweenService:Create(blur, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = size
-    }):Play()
-end
-
--- ============================================
--- ПЕРЕМЕННЫЕ ДЛЯ АНИМАЦИИ
+-- ПЕРЕМЕННЫЕ
 -- ============================================
 local isOpen = false
 local mainFrame = nil
 local floatingBtn = nil
+local templateCard = nil
 
 -- ============================================
 -- ПЛАВАЮЩАЯ КНОПКА
@@ -80,17 +83,10 @@ local function openMenu()
     isOpen = true
     floatingBtn.Visible = false
     mainFrame.Visible = true
-    
-    -- Включаем размытие
-    setBlur(8)
-    
-    -- Анимация появления
     mainFrame.Size = UDim2.new(0, 0, 0, 0)
-    mainFrame.BackgroundTransparency = 1
     local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     local openTween = TweenService:Create(mainFrame, tweenInfo, {
-        Size = UDim2.new(0, 380, 0, 320),
-        BackgroundTransparency = settings.Transparent and 0.2 or 0.1
+        Size = UDim2.new(0, 380, 0, 320)
     })
     openTween:Play()
 end
@@ -98,31 +94,19 @@ end
 local function closeMenu()
     if not mainFrame then return end
     isOpen = false
-    
-    -- Анимация закрытия
     local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
     local closeTween = TweenService:Create(mainFrame, tweenInfo, {
-        Size = UDim2.new(0, 0, 0, 0),
-        BackgroundTransparency = 1
+        Size = UDim2.new(0, 0, 0, 0)
     })
     closeTween:Play()
     closeTween.Completed:Wait()
-    
     mainFrame.Visible = false
     floatingBtn.Visible = true
-    
-    -- ВЫКЛЮЧАЕМ РАЗМЫТИЕ
-    setBlur(0)
 end
 
--- Горячая клавиша RightShift
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.RightShift then
-        if isOpen then
-            closeMenu()
-        else
-            openMenu()
-        end
+        if isOpen then closeMenu() else openMenu() end
     end
 end)
 
@@ -138,7 +122,7 @@ mainFrame.Size = UDim2.new(0, 0, 0, 0)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 mainFrame.BackgroundColor3 = themeColorsList[settings.Theme]
-mainFrame.BackgroundTransparency = 1
+mainFrame.BackgroundTransparency = settings.Transparent and 0.2 or 0.1
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Visible = false
@@ -186,7 +170,7 @@ versionCorner.Parent = versionTag
 local versionText = Instance.new("TextLabel")
 versionText.Size = UDim2.new(1, 0, 1, 0)
 versionText.BackgroundTransparency = 1
-versionText.Text = "V2.0"
+versionText.Text = "V3.0"
 versionText.TextColor3 = Color3.fromRGB(255, 255, 255)
 versionText.TextSize = 11
 versionText.Font = Enum.Font.GothamBold
@@ -219,9 +203,7 @@ btnYellow.Parent = header
 local btnYellowCorner = Instance.new("UICorner")
 btnYellowCorner.CornerRadius = UDim.new(1, 0)
 btnYellowCorner.Parent = btnYellow
-btnYellow.MouseButton1Click:Connect(function()
-    closeMenu()
-end)
+btnYellow.MouseButton1Click:Connect(closeMenu)
 
 local btnGreen = Instance.new("TextButton")
 btnGreen.Size = UDim2.new(0, 12, 0, 12)
@@ -323,56 +305,75 @@ for i = 1, #btnData do
 end
 
 -- ============================================
--- КАРТОЧКИ
+-- ШАБЛОН КАРТОЧКИ (ДЛЯ БЫСТРОГО СОЗДАНИЯ)
+-- ============================================
+templateCard = Instance.new("Frame")
+templateCard.Size = UDim2.new(1, -12, 0, 54)
+templateCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
+templateCard.BackgroundTransparency = 0.3
+templateCard.BorderSizePixel = 0
+templateCard.Visible = false
+templateCard.Parent = ScreenGui
+local tcCorner = Instance.new("UICorner")
+tcCorner.CornerRadius = UDim.new(0, 10)
+tcCorner.Parent = templateCard
+
+local tcLabel = Instance.new("TextLabel")
+tcLabel.Size = UDim2.new(0.6, 0, 1, 0)
+tcLabel.Position = UDim2.new(0, 16, 0, 0)
+tcLabel.BackgroundTransparency = 1
+tcLabel.Text = "Toggle"
+tcLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+tcLabel.TextSize = 16
+tcLabel.Font = Enum.Font.GothamBold
+tcLabel.TextXAlignment = Enum.TextXAlignment.Left
+tcLabel.Parent = templateCard
+
+local tcToggle = Instance.new("Frame")
+tcToggle.Size = UDim2.new(0, 50, 0, 28)
+tcToggle.Position = UDim2.new(1, -14, 0.5, 0)
+tcToggle.AnchorPoint = Vector2.new(1, 0.5)
+tcToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+tcToggle.BackgroundTransparency = 0.1
+tcToggle.BorderSizePixel = 0
+tcToggle.Parent = templateCard
+local tcToggleCorner = Instance.new("UICorner")
+tcToggleCorner.CornerRadius = UDim.new(1, 0)
+tcToggleCorner.Parent = tcToggle
+
+local tcCircle = Instance.new("Frame")
+tcCircle.Size = UDim2.new(0, 22, 0, 22)
+tcCircle.Position = UDim2.new(0, 3, 0.5, 0)
+tcCircle.AnchorPoint = Vector2.new(0, 0.5)
+tcCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+tcCircle.BackgroundTransparency = 0.05
+tcCircle.BorderSizePixel = 0
+tcCircle.Parent = tcToggle
+local tcCircleCorner = Instance.new("UICorner")
+tcCircleCorner.CornerRadius = UDim.new(1, 0)
+tcCircleCorner.Parent = tcCircle
+
+-- ============================================
+-- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ (ЧЕРЕЗ КЛОН)
 -- ============================================
 local function createAeroCard(parent, title, yPos, defaultOn, callback)
-    local card = Instance.new("Frame")
-    card.Size = UDim2.new(1, -12, 0, 54)
+    local card = templateCard:Clone()
+    card.Visible = true
     card.Position = UDim2.new(0, 6, 0, yPos)
-    card.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
-    card.BackgroundTransparency = 0.3
-    card.BorderSizePixel = 0
     card.Parent = parent
-    local cardCorner = Instance.new("UICorner")
-    cardCorner.CornerRadius = UDim.new(0, 10)
-    cardCorner.Parent = card
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.6, 0, 1, 0)
-    label.Position = UDim2.new(0, 16, 0, 0)
-    label.BackgroundTransparency = 1
+    
+    local label = card:FindFirstChild("TextLabel")
     label.Text = title
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 16
-    label.Font = Enum.Font.GothamBold
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = card
-
-    local toggle = Instance.new("Frame")
-    toggle.Size = UDim2.new(0, 50, 0, 28)
-    toggle.Position = UDim2.new(1, -14, 0.5, 0)
-    toggle.AnchorPoint = Vector2.new(1, 0.5)
-    toggle.BackgroundColor3 = defaultOn and Color3.fromRGB(138, 43, 226) or Color3.fromRGB(60, 60, 75)
-    toggle.BackgroundTransparency = 0.1
-    toggle.BorderSizePixel = 0
-    toggle.Parent = card
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(1, 0)
-    toggleCorner.Parent = toggle
-
-    local circle = Instance.new("Frame")
-    circle.Size = UDim2.new(0, 22, 0, 22)
-    circle.Position = defaultOn and UDim2.new(1, -25, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
-    circle.AnchorPoint = Vector2.new(0, 0.5)
-    circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    circle.BackgroundTransparency = 0.05
-    circle.BorderSizePixel = 0
-    circle.Parent = toggle
-    local circleCorner = Instance.new("UICorner")
-    circleCorner.CornerRadius = UDim.new(1, 0)
-    circleCorner.Parent = circle
-
+    
+    local toggle = card:FindFirstChild("Frame")
+    local circle = toggle:FindFirstChild("Frame")
+    
     local isOn = defaultOn or false
+    if isOn then
+        toggle.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+        circle.Position = UDim2.new(1, -25, 0.5, 0)
+    end
+    
     toggle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             isOn = not isOn
@@ -386,10 +387,12 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
             if callback then callback(isOn) end
         end
     end)
+    
+    return card
 end
 
 -- ============================================
--- FEATURES
+-- FEATURES (СОБЫТИЯ)
 -- ============================================
 local featuresContent = contents[1]
 featuresContent.CanvasSize = UDim2.new(0, 0, 0, 280)
@@ -405,84 +408,16 @@ fLabel.Font = Enum.Font.GothamBold
 fLabel.TextXAlignment = Enum.TextXAlignment.Center
 fLabel.Parent = featuresContent
 
--- АВТО-СБОР
-local autoCollectEnabled = false
-local collectThread = nil
-
-local function InteractItem(item)
-    if not item then return false end
-    local prompt = item:FindFirstChildOfClass("ProximityPrompt") or item:FindFirstChild("ProximityPrompt", true)
-    if prompt and prompt.Enabled then
-        local name = string.lower(item.Name)
-        local action = "tap"
-        if string.find(name, "door") then action = "swipe" end
-        local heavyItems = {"engine", "radiator", "battery", "tire", "wheel", "fuel", "can", "hood", "fender", "bumper", "barrel"}
-        for _, heavy in pairs(heavyItems) do
-            if string.find(name, heavy) then action = "hold" break end
-        end
-        if action == "tap" then fireproximityprompt(prompt, 0) return true
-        elseif action == "hold" then fireproximityprompt(prompt, 0.8) return true
-        elseif action == "swipe" then
-            pcall(function() fireproximityprompt(prompt, 0) task.wait(0.1) fireproximityprompt(prompt, 0) end)
-            return true
-        end
-    end
-    return false
-end
-
-local function autoCollectLoop()
-    collectThread = task.spawn(function()
-        while autoCollectEnabled do
-            task.wait(0.3)
-            local char = LP.Character if not char then continue end
-            local root = char:FindFirstChild("HumanoidRootPart") if not root then continue end
-            for _, obj in pairs(workspace:GetDescendants()) do
-                if not autoCollectEnabled then break end
-                if obj:IsA("BasePart") and obj.Parent and obj.Parent:IsA("Model") then
-                    local model = obj.Parent
-                    local dist = (root.Position - model:GetPivot().Position).Magnitude
-                    if dist <= 5 then
-                        if InteractItem(model) then task.wait(0.2) end
-                    end
-                end
-            end
-        end
-    end)
-end
-
 createAeroCard(featuresContent, "Auto Collect", 50, false, function(state)
-    autoCollectEnabled = state
-    if state then autoCollectLoop() print("[ASTRA] Auto Collect: ON")
-    else if collectThread then task.cancel(collectThread) collectThread = nil end print("[ASTRA] Auto Collect: OFF") end
+    Events:Fire("AutoCollect", state)
 end)
 
--- СПИД-БУСТ
-local speedBoostEnabled = false
-
-local function ApplySpeedBoost(state)
-    speedBoostEnabled = state
-    local car = workspace:FindFirstChild("car")
-    if not car then return end
-    local throttle = car.Values and car.Values:FindFirstChild("Throttle")
-    if not throttle then return end
-    if state then
-        local conn = throttle:GetPropertyChangedSignal("Value"):Connect(function()
-            if throttle.Value > 0 then
-                throttle.Value = math.clamp(throttle.Value * 2, 0, 1)
-            end
-        end)
-        print("[ASTRA] Speed Boost: ON")
-    else
-        print("[ASTRA] Speed Boost: OFF")
-    end
-end
-
 createAeroCard(featuresContent, "Speed Boost", 110, false, function(state)
-    ApplySpeedBoost(state)
+    Events:Fire("SpeedBoost", state)
 end)
 
 createAeroCard(featuresContent, "Fast Attack", 170, false, function(state)
-    print("[ASTRA] Fast Attack: " .. (state and "ON" or "OFF"))
+    Events:Fire("FastAttack", state)
 end)
 
 -- ============================================
@@ -686,99 +621,10 @@ vLabel.TextXAlignment = Enum.TextXAlignment.Center
 vLabel.Parent = visualsContent
 
 local espEnabled = false
-local espThread = nil
-local espDistance = 1000
-
-local function createItemESP(instance, text, icon)
-    if instance:FindFirstChild("ESP_Item") then return end
-    local gui = Instance.new("BillboardGui")
-    gui.Name = "ESP_Item"
-    gui.Size = UDim2.new(0, 100, 0, 28)
-    gui.StudsOffset = Vector3.new(0, 1.8, 0)
-    gui.AlwaysOnTop = true
-    gui.Parent = instance
-
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(25, 15, 45)
-    frame.BackgroundTransparency = 0.2
-    frame.BorderSizePixel = 0
-    frame.Parent = gui
-    local fCorner = Instance.new("UICorner")
-    fCorner.CornerRadius = UDim.new(0, 6)
-    fCorner.Parent = frame
-
-    local nameTag = Instance.new("TextLabel")
-    nameTag.Size = UDim2.new(1, 0, 1, 0)
-    nameTag.BackgroundTransparency = 1
-    nameTag.Text = icon .. " " .. text
-    nameTag.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameTag.TextSize = 11
-    nameTag.Font = Enum.Font.GothamBold
-    nameTag.Parent = frame
-end
-
-local function clearESP()
-    for _, v in pairs(workspace:GetDescendants()) do
-        if v.Name == "ESP_Item" then v:Destroy() end
-    end
-end
-
-local function runItemESP()
-    task.spawn(function()
-        while espEnabled do
-            task.wait(0.4)
-            if not espEnabled then break end
-            local playerPos = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
-            if not playerPos then continue end
-            local espCount = 0
-            for _, obj in pairs(workspace:GetDescendants()) do
-                if not espEnabled then break end
-                if espCount >= 35 then break end
-                if obj:IsA("BasePart") and obj.Parent and obj.Parent:IsA("Model") then
-                    local model = obj.Parent
-                    local name = string.lower(model.Name)
-                    local objPos = obj.Position
-                    local distance = (playerPos.Position - objPos).Magnitude
-                    if distance > espDistance then continue end
-                    if model == LP.Character then continue end
-                    local isResource = false
-                    local icon = "📦"
-                    if string.find(name, "gas") or string.find(name, "fuel") or string.find(name, "jerry") or string.find(name, "barrel") or string.find(name, "oil") then
-                        isResource = true; icon = "⛽"
-                    elseif string.find(name, "food") or string.find(name, "can") or string.find(name, "bandage") or string.find(name, "med") or string.find(name, "water") then
-                        isResource = true; icon = "🥫"
-                    elseif string.find(name, "wheel") or string.find(name, "tire") then
-                        isResource = true; icon = "⚙️"
-                    elseif string.find(name, "part") or string.find(name, "engine") or string.find(name, "motor") or string.find(name, "battery") or string.find(name, "radiator") or string.find(name, "scrap") then
-                        isResource = true; icon = "🔧"
-                    elseif string.find(name, "gun") or string.find(name, "rifle") or string.find(name, "shotgun") or string.find(name, "weapon") then
-                        isResource = true; icon = "🔫"
-                    end
-                    if isResource then
-                        createItemESP(model, model.Name, icon)
-                        espCount = espCount + 1
-                    end
-                end
-            end
-        end
-    end)
-end
 
 local function toggleESP(state)
     espEnabled = state
-    if espEnabled then
-        clearESP()
-        espThread = task.spawn(runItemESP)
-        print("[ASTRA] ESP включён")
-    else
-        if espThread then
-            task.cancel(espThread)
-            espThread = nil
-        end
-        clearESP()
-        print("[ASTRA] ESP выключен")
-    end
+    Events:Fire("ESP", state)
 end
 
 createAeroCard(visualsContent, "Resource ESP", 50, false, function(state)
@@ -828,7 +674,7 @@ for i, btn in pairs(btnObjects) do
 end
 
 -- ============================================
--- АВТО-ЗАПУСК
+-- АВТО-ЗАПУСК ESP (ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ)
 -- ============================================
 task.spawn(function()
     task.wait(3)
@@ -842,4 +688,4 @@ task.spawn(function()
     end
 end)
 
-print("ASTRA HUB V2.0 — С РАЗМЫТИЕМ ЗАГРУЖЕН!")
+print("ASTRA HUB V3.0 — МОДУЛЬНАЯ АРХИТЕКТУРА ЗАГРУЖЕНА!")
