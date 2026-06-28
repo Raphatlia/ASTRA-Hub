@@ -1,44 +1,33 @@
--- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT (ОПРЕДЕЛЕНИЕ ПО СИГНАТУРЕ)
-print("[ASTRA] Загрузка модуля A Desert...")
-
--- ============================================
--- ОПРЕДЕЛЕНИЕ ИГРЫ ПО УНИКАЛЬНЫМ ОБЪЕКТАМ
--- ============================================
-local GAME_SIGNATURES = {
-    "SupplyCrate",   -- ящики с припасами
-    "gas_station",   -- заправка
-    "zombie",        -- зомби
-    "Desrt",         -- часть названия моделей
-    "sandbox",       -- папка с объектами
-}
-
-local function IsDesrtGame()
-    for _, name in pairs(GAME_SIGNATURES) do
-        local found = workspace:FindFirstChild(name, true)
-        if found then return true end
-        
-        local foundRS = game.ReplicatedStorage:FindFirstChild(name, true)
-        if foundRS then return true end
-    end
-    return false
-end
-
--- Если игра не подходит — отключаем модуль
-if not IsDesrtGame() then
-    print("[ASTRA] A Desert не обнаружена. Модуль отключён.")
-    return {}
-end
-
-print("[ASTRA] A Desert обнаружена! Загружаю функции...")
-
--- ============================================
--- ДАЛЬШЕ ВЕСЬ ТВОЙ КОД ESP, HUD, АВТО-СБОР
--- ============================================
+-- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT (ДЕТЕКТОР ДВИЖЕНИЯ + ESP)
+local Module = {}
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
 -- ============================================
--- ESP
+-- ПРОВЕРКА: ЕСТЬ ЛИ РЯДОМ ХАРАКТЕРНЫЕ ОБЪЕКТЫ
+-- ============================================
+local function IsDesrtGame()
+    if not LP.Character then return false end
+    local root = LP.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+
+    local radius = 300
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Parent and obj.Parent:IsA("Model") then
+            if root.Position:Distance(obj.Position) < radius then
+                local name = obj.Name
+                if name == "Car" or name == "Zombie" or name == "Crate" or 
+                   name == "Radiator" or name == "Engine" or name == "Barrel" then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+-- ============================================
+-- ФУНКЦИИ ESP
 -- ============================================
 local espEnabled = false
 local espDistance = 1000
@@ -156,14 +145,114 @@ local function toggleESP(state)
     end
 end
 
--- Делаем функцию доступной для меню
 getgenv().toggleESP = toggleESP
 
 -- ============================================
--- АВТО-ЗАПУСК ESP
+-- АВТО-СБОР
 -- ============================================
-task.wait(2)
-print("[ASTRA] A Desert: ESP включён автоматически!")
-toggleESP(true)
+local autoCollectEnabled = false
+local collectThread = nil
 
-print("[ASTRA] Модуль A Desert загружен!")
+local function InteractItem(item)
+    if not item then return false end
+    local prompt = item:FindFirstChildOfClass("ProximityPrompt") or item:FindFirstChild("ProximityPrompt", true)
+    if prompt and prompt.Enabled then
+        local name = string.lower(item.Name)
+        local action = "tap"
+        if string.find(name, "door") then action = "swipe" end
+        local heavyItems = {"engine", "radiator", "battery", "tire", "wheel", "fuel", "can", "hood", "fender", "bumper", "barrel"}
+        for _, heavy in pairs(heavyItems) do
+            if string.find(name, heavy) then action = "hold" break end
+        end
+        if action == "tap" then fireproximityprompt(prompt, 0) return true
+        elseif action == "hold" then fireproximityprompt(prompt, 0.8) return true
+        elseif action == "swipe" then
+            pcall(function() fireproximityprompt(prompt, 0) task.wait(0.1) fireproximityprompt(prompt, 0) end)
+            return true
+        end
+    end
+    return false
+end
+
+local function autoCollectLoop()
+    collectThread = task.spawn(function()
+        while autoCollectEnabled do
+            task.wait(0.3)
+            local char = LP.Character if not char then continue end
+            local root = char:FindFirstChild("HumanoidRootPart") if not root then continue end
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if not autoCollectEnabled then break end
+                if obj:IsA("BasePart") and obj.Parent and obj.Parent:IsA("Model") then
+                    local model = obj.Parent
+                    local dist = (root.Position - model:GetPivot().Position).Magnitude
+                    if dist <= 5 then
+                        if InteractItem(model) then task.wait(0.2) end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local Events = getgenv().AstraEvents
+if Events then
+    Events:Connect("AutoCollect", function(state)
+        autoCollectEnabled = state
+        if state then
+            autoCollectLoop()
+            print("[ASTRA] Auto Collect: ON (A Desert)")
+        else
+            if collectThread then
+                task.cancel(collectThread)
+                collectThread = nil
+            end
+            print("[ASTRA] Auto Collect: OFF (A Desert)")
+        end
+    end)
+end
+
+-- ============================================
+-- СПИД-БУСТ
+-- ============================================
+local speedBoostEnabled = false
+
+local function ApplySpeedBoost(state)
+    speedBoostEnabled = state
+    local car = workspace:FindFirstChild("car")
+    if not car then return end
+    local throttle = car.Values and car.Values:FindFirstChild("Throttle")
+    if not throttle then return end
+    if state then
+        local conn = throttle:GetPropertyChangedSignal("Value"):Connect(function()
+            if throttle.Value > 0 then
+                throttle.Value = math.clamp(throttle.Value * 2, 0, 1)
+            end
+        end)
+        print("[ASTRA] Speed Boost: ON (A Desert)")
+    else
+        print("[ASTRA] Speed Boost: OFF (A Desert)")
+    end
+end
+
+if Events then
+    Events:Connect("SpeedBoost", function(state)
+        ApplySpeedBoost(state)
+    end)
+end
+
+-- ============================================
+-- ЦИКЛИЧЕСКАЯ ПРОВЕРКА (ОБНАРУЖЕНИЕ ИГРЫ)
+-- ============================================
+task.spawn(function()
+    while true do
+        if IsDesrtGame() then
+            print("[ASTRA] A Desert обнаружена! Загружаю функции...")
+            task.wait(2)
+            toggleESP(true)
+            break
+        end
+        task.wait(2)
+    end
+end)
+
+print("[ASTRA] Модуль A Desert загружен! Ожидаю обнаружения игры...")
