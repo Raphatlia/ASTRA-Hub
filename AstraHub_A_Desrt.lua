@@ -1,48 +1,34 @@
--- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT / A LONG ROAD (УНИВЕРСАЛЬНЫЙ ДЕТЕКТОР)
+-- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT (ДЕТЕКТОР ПО КНОПКАМ МЕНЮ)
 local Module = {}
 
 -- ============================================
--- УНИВЕРСАЛЬНЫЙ ДЕТЕКТОР ИГР
+-- ПОИСК УНИКАЛЬНЫХ КНОПОК МЕНЮ
 -- ============================================
-local function IsSupportedGame()
-    -- 1. Проверяем GUI (кнопки в меню)
+local function IsDesrtGame()
     for _, obj in pairs(game:GetDescendants()) do
-        if obj.Name == "Play" or obj.Name == "Changelog" or obj.Name == "Shop" then
-            return true
-        end
-        if obj.Name == "Join" or obj.Name == "Create" or obj.Name == "Exit" then
-            return true
-        end
-        if obj.Name == "Ignition" or obj.Name == "Open Script" then
-            return true
-        end
+        if obj.Name == "Play" then return true end
+        if obj.Name == "Changelog" then return true end
+        if obj.Name == "Shop" then return true end
+        if obj.Name == "Join" then return true end
+        if obj.Name == "Create" then return true end
+        if obj.Name == "Exit" then return true end
+        if obj.Name == "Ignition" then return true end
+        if obj.Name == "Sandbox+" then return true end
+        if obj.Name == "Open Script" then return true end
     end
-
-    -- 2. Проверяем наличие висящей "главной детали" машины
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.Parent and obj.Parent:IsA("Model") then
-            local name = obj.Name
-            if name == "Main" or name == "Body" or name == "center" or name == "CarPart" or name == "Part" then
-                if obj.Parent.Name == "car" or obj.Parent.Name == "vehicle" then
-                    return true
-                end
-            end
-        end
-    end
-
     return false
 end
 
--- Если игра не подходит — отключаем модуль
-if not IsSupportedGame() then
-    print("[ASTRA] Игра не поддерживается. Модуль отключён.")
+-- Если игра не A Desrt — отключаем модуль
+if not IsDesrtGame() then
+    print("[ASTRA] A Desert не обнаружена. Модуль отключён.")
     return Module
 end
 
-print("[ASTRA] Поддерживаемая игра обнаружена! Загружаю функции...")
+print("[ASTRA] A Desert обнаружена по кнопкам меню! Загружаю функции...")
 
 -- ============================================
--- ВЕСЬ ФУНКЦИОНАЛ
+-- ВЕСЬ ФУНКЦИОНАЛ (ESP, АВТО-СБОР, СПИД-БУСТ)
 -- ============================================
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
@@ -155,14 +141,14 @@ local function toggleESP(state)
     if state then
         clearESP()
         getgenv().espThread = task.spawn(runItemESP)
-        print("[ASTRA] ESP включён")
+        print("[ASTRA] ESP включён (A Desert)")
     else
         if getgenv().espThread then
             task.cancel(getgenv().espThread)
             getgenv().espThread = nil
         end
         clearESP()
-        print("[ASTRA] ESP выключен")
+        print("[ASTRA] ESP выключен (A Desert)")
     end
 end
 
@@ -221,13 +207,13 @@ if Events then
         autoCollectEnabled = state
         if state then
             autoCollectLoop()
-            print("[ASTRA] Auto Collect: ON")
+            print("[ASTRA] Auto Collect: ON (A Desert)")
         else
             if collectThread then
                 task.cancel(collectThread)
                 collectThread = nil
             end
-            print("[ASTRA] Auto Collect: OFF")
+            print("[ASTRA] Auto Collect: OFF (A Desert)")
         end
     end)
 end
@@ -249,9 +235,9 @@ local function ApplySpeedBoost(state)
                 throttle.Value = math.clamp(throttle.Value * 2, 0, 1)
             end
         end)
-        print("[ASTRA] Speed Boost: ON")
+        print("[ASTRA] Speed Boost: ON (A Desert)")
     else
-        print("[ASTRA] Speed Boost: OFF")
+        print("[ASTRA] Speed Boost: OFF (A Desert)")
     end
 end
 
@@ -266,4 +252,4 @@ end
 -- ============================================
 task.wait(2)
 toggleESP(true)
-print("[ASTRA] Модуль загружен! ESP включён.")
+print("[ASTRA] Модуль A Desert загружен! ESP включён.")
