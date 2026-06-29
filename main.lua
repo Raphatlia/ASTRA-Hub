@@ -1,4 +1,4 @@
--- ASTRA HUB V3.0 — КОМПАКТНЫЙ ПРЕМИУМ-ДИЗАЙН
+-- ASTRA HUB V3.0 — ИСПРАВЛЕННЫЙ ФИНАЛ (АККОРДЕОНЫ + ТЕМЫ + ЛОГО)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -39,7 +39,10 @@ local themeColorsList = {
     Astral = Color3.fromRGB(25, 15, 45),
     Blood = Color3.fromRGB(60, 15, 20),
     Ocean = Color3.fromRGB(10, 25, 50),
+    Dark = Color3.fromRGB(10, 10, 15),
 }
+
+local themeNames = {"Astral", "Blood", "Ocean", "Dark"}
 
 -- ============================================
 -- ПЕРЕМЕННЫЕ
@@ -49,7 +52,7 @@ local mainFrame = nil
 local floatingBtn = nil
 
 -- ============================================
--- ПЛАВАЮЩАЯ КНОПКА (УМЕНЬШЕННАЯ)
+-- ПЛАВАЮЩАЯ КНОПКА
 -- ============================================
 floatingBtn = Instance.new("TextButton")
 floatingBtn.Size = UDim2.new(0, 150, 0, 38)
@@ -75,7 +78,7 @@ btnCorner.CornerRadius = UDim.new(1, 0)
 btnCorner.Parent = floatingBtn
 
 -- ============================================
--- ЛОГОТИП (КОМПАКТНЫЙ)
+-- ЛОГОТИП (ЧЁРНЫЙ ФОН)
 -- ============================================
 local logo = Instance.new("ImageLabel")
 logo.Size = UDim2.new(0, 30, 0, 30)
@@ -124,7 +127,7 @@ floatingBtn.MouseButton1Click:Connect(openMenu)
 floatingBtn.TouchTap:Connect(openMenu)
 
 -- ============================================
--- ОСНОВНОЕ ОКНО (КОМПАКТНОЕ)
+-- ОСНОВНОЕ ОКНО
 -- ============================================
 mainFrame = Instance.new("Frame")
 mainFrame.Name = "mainFrame"
@@ -143,7 +146,7 @@ mainCorner.CornerRadius = UDim.new(0, 14)
 mainCorner.Parent = mainFrame
 
 -- ============================================
--- ШАПКА (КОМПАКТНАЯ)
+-- ШАПКА
 -- ============================================
 local header = Instance.new("Frame")
 header.Size = UDim2.new(1, 0, 0, 36)
@@ -186,7 +189,7 @@ versionText.TextSize = 10
 versionText.Font = Enum.Font.GothamBold
 versionText.Parent = versionTag
 
--- MACOS КНОПКИ (КОМПАКТНЫЕ)
+-- MACOS КНОПКИ
 local btnRed = Instance.new("TextButton")
 btnRed.Size = UDim2.new(0, 10, 0, 10)
 btnRed.Position = UDim2.new(1, -48, 0.5, 0)
@@ -314,7 +317,7 @@ for i = 1, #btnData do
 end
 
 -- ============================================
--- КОМПАКТНАЯ КАРТОЧКА (СВИТЧ 40x22)
+-- КОМПАКТНАЯ КАРТОЧКА
 -- ============================================
 local function createAeroCard(parent, title, yPos, defaultOn, callback)
     local card = Instance.new("Frame")
@@ -380,9 +383,9 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
 end
 
 -- ============================================
--- АККОРДЕОН (СВОРАЧИВАЕМЫЙ БЛОК)
+-- АККОРДЕОН С UIListLayout
 -- ============================================
-local function createAccordion(parent, title, yPos, contentYPos, elements)
+local function createAccordion(parent, title, yPos, elements)
     local headerBtn = Instance.new("TextButton")
     headerBtn.Size = UDim2.new(1, -10, 0, 28)
     headerBtn.Position = UDim2.new(0, 5, 0, yPos)
@@ -406,6 +409,12 @@ local function createAccordion(parent, title, yPos, contentYPos, elements)
     container.ClipsDescendants = true
     container.Parent = parent
 
+    -- UIListLayout для автоматического расположения
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0, 4)
+    layout.Parent = container
+
     local isOpen = false
     local contentHeight = 0
     local elementY = 4
@@ -428,10 +437,10 @@ local function createAccordion(parent, title, yPos, contentYPos, elements)
 end
 
 -- ============================================
--- FEATURES (С АККОРДЕОНАМИ)
+-- FEATURES
 -- ============================================
 local featuresContent = contents[1]
-featuresContent.CanvasSize = UDim2.new(0, 0, 0, 280)
+featuresContent.CanvasSize = UDim2.new(0, 0, 0, 200)
 
 local fLabel = Instance.new("TextLabel")
 fLabel.Size = UDim2.new(1, 0, 0, 28)
@@ -444,19 +453,19 @@ fLabel.Font = Enum.Font.GothamBold
 fLabel.TextXAlignment = Enum.TextXAlignment.Center
 fLabel.Parent = featuresContent
 
-createAccordion(featuresContent, "🚀 Movement", 32, 0, {
+createAccordion(featuresContent, "🚀 Movement", 32, {
     {title = "Speed Boost", defaultOn = false, callback = function(s) Events:Fire("SpeedBoost", s) end},
     {title = "Auto Collect", defaultOn = false, callback = function(s) Events:Fire("AutoCollect", s) end},
 })
 
-createAccordion(featuresContent, "⚔️ Combat", 68, 32, {
+createAccordion(featuresContent, "⚔️ Combat", 68, {
     {title = "Fast Attack", defaultOn = false, callback = function(s) Events:Fire("FastAttack", s) end},
 })
 
-featuresContent.CanvasSize = UDim2.new(0, 0, 0, 120)
+featuresContent.CanvasSize = UDim2.new(0, 0, 0, 150)
 
 -- ============================================
--- SETTINGS
+-- SETTINGS (С ВЫБОРОМ ТЕМ)
 -- ============================================
 local settingsContent = contents[2]
 settingsContent.CanvasSize = UDim2.new(0, 0, 0, 200)
@@ -472,20 +481,177 @@ sLabel.Font = Enum.Font.GothamBold
 sLabel.TextXAlignment = Enum.TextXAlignment.Center
 sLabel.Parent = settingsContent
 
-createAccordion(settingsContent, "🎨 Appearance", 32, 0, {
-    {title = "Transparency", defaultOn = false, callback = function(s) 
-        settings.Transparent = s
-        mainFrame.BackgroundTransparency = s and 0.2 or 0.1
-    end},
-})
+-- TRANSPARENCY
+local function createSettingCard(parent, title, yPos, defaultOn, callback)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, -10, 0, 32)
+    card.Position = UDim2.new(0, 5, 0, yPos)
+    card.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
+    card.BackgroundTransparency = 0.3
+    card.BorderSizePixel = 0
+    card.Parent = parent
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 8)
+    cardCorner.Parent = card
 
-settingsContent.CanvasSize = UDim2.new(0, 0, 0, 80)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.6, 0, 1, 0)
+    label.Position = UDim2.new(0, 12, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = title
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 13
+    label.Font = Enum.Font.GothamBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = card
+
+    local toggle = Instance.new("Frame")
+    toggle.Size = UDim2.new(0, 40, 0, 22)
+    toggle.Position = UDim2.new(1, -12, 0.5, 0)
+    toggle.AnchorPoint = Vector2.new(1, 0.5)
+    toggle.BackgroundColor3 = defaultOn and Color3.fromRGB(138, 43, 226) or Color3.fromRGB(60, 60, 75)
+    toggle.BackgroundTransparency = 0.1
+    toggle.BorderSizePixel = 0
+    toggle.Parent = card
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(1, 0)
+    toggleCorner.Parent = toggle
+
+    local circle = Instance.new("Frame")
+    circle.Size = UDim2.new(0, 18, 0, 18)
+    circle.Position = defaultOn and UDim2.new(1, -20, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+    circle.AnchorPoint = Vector2.new(0, 0.5)
+    circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    circle.BackgroundTransparency = 0.05
+    circle.BorderSizePixel = 0
+    circle.Parent = toggle
+    local circleCorner = Instance.new("UICorner")
+    circleCorner.CornerRadius = UDim.new(1, 0)
+    circleCorner.Parent = circle
+
+    local isOn = defaultOn or false
+    toggle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isOn = not isOn
+            if isOn then
+                toggle.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+                circle.Position = UDim2.new(1, -20, 0.5, 0)
+            else
+                toggle.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+                circle.Position = UDim2.new(0, 2, 0.5, 0)
+            end
+            if callback then callback(isOn) end
+        end
+    end)
+end
+
+createSettingCard(settingsContent, "Transparency", 32, false, function(s)
+    settings.Transparent = s
+    mainFrame.BackgroundTransparency = s and 0.2 or 0.1
+end)
+
+-- ТЕМЫ (ВЫПАДАЮЩИЙ СПИСОК)
+local themeCard = Instance.new("Frame")
+themeCard.Size = UDim2.new(1, -10, 0, 32)
+themeCard.Position = UDim2.new(0, 5, 0, 68)
+themeCard.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
+themeCard.BackgroundTransparency = 0.3
+themeCard.BorderSizePixel = 0
+themeCard.ClipsDescendants = true
+themeCard.Parent = settingsContent
+local themeCardCorner = Instance.new("UICorner")
+themeCardCorner.CornerRadius = UDim.new(0, 8)
+themeCardCorner.Parent = themeCard
+
+local themeHeader = Instance.new("TextButton")
+themeHeader.Size = UDim2.new(1, 0, 0, 32)
+themeHeader.BackgroundTransparency = 1
+themeHeader.Text = "🎨 Theme: " .. settings.Theme
+themeHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
+themeHeader.TextSize = 13
+themeHeader.Font = Enum.Font.GothamBold
+themeHeader.TextXAlignment = Enum.TextXAlignment.Left
+themeHeader.TextYAlignment = Enum.TextYAlignment.Center
+themeHeader.Parent = themeCard
+
+local themeArrow = Instance.new("TextLabel")
+themeArrow.Size = UDim2.new(0, 20, 1, 0)
+themeArrow.Position = UDim2.new(1, -12, 0, 0)
+themeArrow.BackgroundTransparency = 1
+themeArrow.Text = "▼"
+themeArrow.TextColor3 = Color3.fromRGB(180, 180, 200)
+themeArrow.TextSize = 14
+themeArrow.Font = Enum.Font.GothamBold
+themeArrow.TextXAlignment = Enum.TextXAlignment.Right
+themeArrow.TextYAlignment = Enum.TextYAlignment.Center
+themeArrow.Parent = themeHeader
+
+local themeList = Instance.new("Frame")
+themeList.Size = UDim2.new(1, 0, 0, 0)
+themeList.Position = UDim2.new(0, 0, 0, 32)
+themeList.BackgroundTransparency = 1
+themeList.ClipsDescendants = true
+themeList.Parent = themeCard
+
+local isThemeOpen = false
+themeCard.Size = UDim2.new(1, -10, 0, 32)
+
+for i, opt in pairs(themeNames) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 28)
+    btn.Position = UDim2.new(0, 0, 0, (i-1) * 28)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 35, 60)
+    btn.BackgroundTransparency = 0
+    btn.Text = "  " .. opt
+    btn.TextColor3 = Color3.fromRGB(220, 220, 240)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.Gotham
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.TextYAlignment = Enum.TextYAlignment.Center
+    btn.BorderSizePixel = 0
+    btn.Parent = themeList
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+
+    if opt == settings.Theme then
+        btn.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+        btn.BackgroundTransparency = 0.2
+        btn.BorderSizePixel = 2
+        btn.BorderColor3 = Color3.fromRGB(138, 43, 226)
+    end
+
+    btn.MouseButton1Click:Connect(function()
+        settings.Theme = opt
+        themeHeader.Text = "🎨 Theme: " .. opt
+        mainFrame.BackgroundColor3 = themeColorsList[opt]
+        isThemeOpen = false
+        themeCard.Size = UDim2.new(1, -10, 0, 32)
+        themeList.Size = UDim2.new(1, 0, 0, 0)
+        themeArrow.Text = "▼"
+    end)
+end
+
+themeHeader.MouseButton1Click:Connect(function()
+    isThemeOpen = not isThemeOpen
+    if isThemeOpen then
+        themeArrow.Text = "▲"
+        themeCard.Size = UDim2.new(1, -10, 0, 32 + #themeNames * 28)
+        themeList.Size = UDim2.new(1, 0, 0, #themeNames * 28)
+    else
+        themeArrow.Text = "▼"
+        themeCard.Size = UDim2.new(1, -10, 0, 32)
+        themeList.Size = UDim2.new(1, 0, 0, 0)
+    end
+end)
+
+settingsContent.CanvasSize = UDim2.new(0, 0, 0, 130)
 
 -- ============================================
 -- VISUALS (ESP)
 -- ============================================
 local visualsContent = contents[3]
-visualsContent.CanvasSize = UDim2.new(0, 0, 0, 150)
+visualsContent.CanvasSize = UDim2.new(0, 0, 0, 100)
 
 local vLabel = Instance.new("TextLabel")
 vLabel.Size = UDim2.new(1, 0, 0, 28)
@@ -551,7 +717,7 @@ for i, btn in pairs(btnObjects) do
 end
 
 -- ============================================
--- АВТО-ЗАГРУЗКА МОДУЛЕЙ С GITHUB
+-- АВТО-ЗАГРУЗКА МОДУЛЕЙ
 -- ============================================
 local function loadModuleFromGit(name, url)
     local success, module = pcall(function()
@@ -580,4 +746,4 @@ if longRoadModule then
     print("[ASTRA] A Long Road модуль активен!")
 end
 
-print("ASTRA HUB V3.0 — КОМПАКТНЫЙ ПРЕМИУМ-ДИЗАЙН ЗАГРУЖЕН!")
+print("ASTRA HUB V3.0 — ИСПРАВЛЕННЫЙ ФИНАЛ ЗАГРУЖЕН!")
