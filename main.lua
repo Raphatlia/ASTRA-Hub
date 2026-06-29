@@ -1,4 +1,4 @@
--- ASTRA HUB V3.0 — С ЛОГОТИПОМ (ID: 91782228545737)
+-- ASTRA HUB V3.0 — С ЛОГОТИПОМ (ГОТОВАЯ ВЕРСИЯ)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
