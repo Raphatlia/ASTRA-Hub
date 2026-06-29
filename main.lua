@@ -1,4 +1,4 @@
--- ASTRA HUB V3.0 — ИДЕАЛЬНЫЕ АККОРДЕОНЫ (БЕЗ НАЕЗЖАНИЯ)
+-- ASTRA HUB V3.0 — ФИНАЛ (АККОРДЕОНЫ С LAYOUTORDER)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -383,9 +383,9 @@ local function createAeroCard(parent, title, yPos, defaultOn, callback)
 end
 
 -- ============================================
--- ИДЕАЛЬНЫЙ АККОРДЕОН (С UIListLayout)
+-- ИДЕАЛЬНЫЙ АККОРДЕОН (С LayoutOrder)
 -- ============================================
-local function createAccordion(parent, title, yPos, elements)
+local function createAccordion(parent, title, yPos, order, elements)
     local headerBtn = Instance.new("TextButton")
     headerBtn.Size = UDim2.new(1, -10, 0, 28)
     headerBtn.Position = UDim2.new(0, 5, 0, yPos)
@@ -408,8 +408,9 @@ local function createAccordion(parent, title, yPos, elements)
     container.BackgroundTransparency = 1
     container.ClipsDescendants = true
     container.Parent = parent
+    container.LayoutOrder = order -- ГЛАВНОЕ: порядок в UIListLayout
 
-    -- ГЛАВНОЕ: UIListLayout для автоматического смещения
+    -- UIListLayout внутри контейнера для карточек
     local layout = Instance.new("UIListLayout")
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Padding = UDim.new(0, 4)
@@ -437,7 +438,7 @@ local function createAccordion(parent, title, yPos, elements)
 end
 
 -- ============================================
--- FEATURES
+-- FEATURES (С LayoutOrder)
 -- ============================================
 local featuresContent = contents[1]
 featuresContent.CanvasSize = UDim2.new(0, 0, 0, 200)
@@ -453,12 +454,18 @@ fLabel.Font = Enum.Font.GothamBold
 fLabel.TextXAlignment = Enum.TextXAlignment.Center
 fLabel.Parent = featuresContent
 
-createAccordion(featuresContent, "🚀 Movement", 32, {
+-- UIListLayout для аккордеонов (главное!)
+local accordionLayout = Instance.new("UIListLayout")
+accordionLayout.SortOrder = Enum.SortOrder.LayoutOrder
+accordionLayout.Padding = UDim.new(0, 6)
+accordionLayout.Parent = featuresContent
+
+createAccordion(featuresContent, "🚀 Movement", 0, 1, {
     {title = "Speed Boost", defaultOn = false, callback = function(s) Events:Fire("SpeedBoost", s) end},
     {title = "Auto Collect", defaultOn = false, callback = function(s) Events:Fire("AutoCollect", s) end},
 })
 
-createAccordion(featuresContent, "⚔️ Combat", 68, {
+createAccordion(featuresContent, "⚔️ Combat", 0, 2, {
     {title = "Fast Attack", defaultOn = false, callback = function(s) Events:Fire("FastAttack", s) end},
 })
 
@@ -746,4 +753,4 @@ if longRoadModule then
     print("[ASTRA] A Long Road модуль активен!")
 end
 
-print("ASTRA HUB V3.0 — ИДЕАЛЬНЫЕ АККОРДЕОНЫ ЗАГРУЖЕНЫ!")
+print("ASTRA HUB V3.0 — АККОРДЕОНЫ С LAYOUTORDER ЗАГРУЖЕНЫ!")
