@@ -152,7 +152,7 @@ logo.Position = UDim2.new(0, 8, 0.5, 0)
 logo.AnchorPoint = Vector2.new(0, 0.5)
 logo.Image = "rbxassetid://91782228545737"
 logo.BackgroundTransparency = 1
-logo.Parent = header
+logo.Parent = header  -- <--- ПРИВЯЗАЛИ К ШАПКЕ!
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(0.5, 0, 1, 0)
