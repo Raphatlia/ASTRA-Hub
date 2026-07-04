@@ -1,4 +1,4 @@
--- ASTRA HUB V3.0 — ФИНАЛ (МГНОВЕННОЕ НЕБО)
+-- ASTRA HUB V3.0 — ФИНАЛ (ОБВОДКА СНАРУЖИ)
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -43,7 +43,7 @@ local themeColors = {
 }
 local themeNames = {"Astral","Blood","Ocean","Dark"}
 
--- СПИСОК ФОНОВ ДЛЯ МЕНЮ
+-- СПИСОК ФОНОВ
 local menuBackgrounds = {
     ["Default"] = "",
     ["Space"] = BG_ID,
@@ -64,7 +64,7 @@ local isOpen = false
 local mainFrame, floatingBtn, bgImage
 
 -- ============================================
--- ФУНКЦИЯ СМЕНЫ НЕБА (МГНОВЕННАЯ!)
+-- ФУНКЦИЯ СМЕНЫ НЕБА
 -- ============================================
 local function updateSkybox(id)
     local oldSky = Lighting:FindFirstChild("AstraSky")
@@ -77,34 +77,41 @@ local function updateSkybox(id)
     newSky.SkyboxUp = id
     newSky.Parent = Lighting
 
-    -- МГНОВЕННОЕ ОБНОВЛЕНИЕ (ДЁРГАЕМ ЯРКОСТЬ)
     Lighting.Brightness = Lighting.Brightness + 0.01
     task.wait(0.05)
     Lighting.Brightness = Lighting.Brightness - 0.01
 end
 
--- Применяем начальное небо
 updateSkybox(skyboxList[settings.Skybox])
 
 -- ============================================
--- ПЛАВАЮЩАЯ КНОПКА
+-- ПЛАВАЮЩАЯ КНОПКА (ОБВОДКА СНАРУЖИ)
 -- ============================================
 floatingBtn = Instance.new("TextButton")
-floatingBtn.Size = UDim2.new(0,150,0,38)
-floatingBtn.Position = UDim2.new(0.5,-75,0.05,0)
+floatingBtn.Size = UDim2.new(0,160,0,44)
+floatingBtn.Position = UDim2.new(0.5,-80,0.05,0)
 floatingBtn.AnchorPoint = Vector2.new(0.5,0)
 floatingBtn.BackgroundColor3 = Color3.fromRGB(15,12,25)
-floatingBtn.BackgroundTransparency = 0.15
-floatingBtn.BorderSizePixel = 2
-floatingBtn.BorderColor3 = Color3.fromRGB(138,43,226)
+floatingBtn.BackgroundTransparency = 0.1
+floatingBtn.BorderSizePixel = 0
 floatingBtn.Text = "Open Script"
 floatingBtn.TextColor3 = Color3.fromRGB(255,255,255)
-floatingBtn.TextSize = 13
+floatingBtn.TextSize = 14
 floatingBtn.Font = Enum.Font.GothamBold
 floatingBtn.Parent = ScreenGui
+
+-- Закругление
 local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(1,0)
 btnCorner.Parent = floatingBtn
+
+-- 🔥 ОБВОДКА СНАРУЖИ (ApplyStrokeMode = Border)
+local capsuleStroke = Instance.new("UIStroke")
+capsuleStroke.Color = Color3.fromRGB(138, 43, 226)
+capsuleStroke.Thickness = 1.5
+capsuleStroke.Transparency = 0
+capsuleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+capsuleStroke.Parent = floatingBtn
 
 -- ДРАГАБЛ КНОПКИ
 local dragData = {}
@@ -322,41 +329,44 @@ for i = 1,3 do
     f.BackgroundTransparency = 1
     f.BorderSizePixel = 0
     f.CanvasSize = UDim2.new(0,0,0,0)
-    f.ScrollBarThickness = 2
-    f.ScrollBarImageColor3 = Color3.fromRGB(80,40,140)
+    f.ScrollBarThickness = 4
+    f.ScrollBarImageColor3 = Color3.fromRGB(138,43,226)
+    f.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right
     f.Visible = (i == 1)
     f.Parent = rightPanel
     contents[i] = f
 end
 
--- КАРТОЧКА С АНИМАЦИЕЙ
+-- ============================================
+-- КАРТОЧКА
+-- ============================================
 local function createCard(parent, title, defaultOn, callback)
     local card = Instance.new("Frame")
-    card.Size = UDim2.new(1,-10,0,32)
-    card.BackgroundColor3 = Color3.fromRGB(30,28,45)
-    card.BackgroundTransparency = 0.3
+    card.Size = UDim2.new(1,-10,0,38)
+    card.BackgroundColor3 = Color3.fromRGB(25,23,40)
+    card.BackgroundTransparency = 0.2
     card.BorderSizePixel = 0
     card.Parent = parent
     local cCorner = Instance.new("UICorner")
-    cCorner.CornerRadius = UDim.new(0,8)
+    cCorner.CornerRadius = UDim.new(0,10)
     cCorner.Parent = card
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6,0,1,0)
-    label.Position = UDim2.new(0,12,0,0)
+    label.Position = UDim2.new(0,14,0,0)
     label.BackgroundTransparency = 1
     label.Text = title
-    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.TextColor3 = Color3.fromRGB(235,235,245)
     label.TextSize = 13
     label.Font = Enum.Font.GothamBold
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = card
 
     local toggle = Instance.new("Frame")
-    toggle.Size = UDim2.new(0,40,0,22)
-    toggle.Position = UDim2.new(1,-12,0.5,0)
+    toggle.Size = UDim2.new(0,44,0,24)
+    toggle.Position = UDim2.new(1,-14,0.5,0)
     toggle.AnchorPoint = Vector2.new(1,0.5)
-    toggle.BackgroundColor3 = defaultOn and Color3.fromRGB(138,43,226) or Color3.fromRGB(60,60,75)
+    toggle.BackgroundColor3 = defaultOn and Color3.fromRGB(138,43,226) or Color3.fromRGB(55,55,70)
     toggle.BackgroundTransparency = 0.1
     toggle.BorderSizePixel = 0
     toggle.Parent = card
@@ -365,11 +375,11 @@ local function createCard(parent, title, defaultOn, callback)
     tCorner.Parent = toggle
 
     local circle = Instance.new("Frame")
-    circle.Size = UDim2.new(0,18,0,18)
-    circle.Position = defaultOn and UDim2.new(1,-20,0.5,0) or UDim2.new(0,2,0.5,0)
+    circle.Size = UDim2.new(0,20,0,20)
+    circle.Position = defaultOn and UDim2.new(1,-22,0.5,0) or UDim2.new(0,2,0.5,0)
     circle.AnchorPoint = Vector2.new(0,0.5)
     circle.BackgroundColor3 = Color3.fromRGB(255,255,255)
-    circle.BackgroundTransparency = 0.05
+    circle.BackgroundTransparency = 0.1
     circle.BorderSizePixel = 0
     circle.Parent = toggle
     local cCorner2 = Instance.new("UICorner")
@@ -377,18 +387,17 @@ local function createCard(parent, title, defaultOn, callback)
     cCorner2.Parent = circle
 
     local isOn = defaultOn or false
-    local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    
+    local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
     toggle.InputBegan:Connect(function(inp)
         if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
             isOn = not isOn
-            if isOn then
-                TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = Color3.fromRGB(138,43,226)}):Play()
-                TweenService:Create(circle, tweenInfo, {Position = UDim2.new(1,-20,0.5,0)}):Play()
-            else
-                TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = Color3.fromRGB(60,60,75)}):Play()
-                TweenService:Create(circle, tweenInfo, {Position = UDim2.new(0,2,0.5,0)}):Play()
-            end
+            local targetColor = isOn and Color3.fromRGB(138,43,226) or Color3.fromRGB(55,55,70)
+            local targetPos = isOn and UDim2.new(1,-22,0.5,0) or UDim2.new(0,2,0.5,0)
+            
+            TweenService:Create(toggle, tweenInfo, {BackgroundColor3 = targetColor}):Play()
+            TweenService:Create(circle, tweenInfo, {Position = targetPos}):Play()
+            
             if callback then callback(isOn) end
         end
     end)
@@ -430,7 +439,7 @@ local function createAccordion(parent, title, order, elements)
     local height = 0
     for _, el in pairs(elements) do
         createCard(container, el.title, el.defaultOn, el.callback)
-        height = height + 32
+        height = height + 38
     end
 
     headerBtn.MouseButton1Click:Connect(function()
@@ -472,7 +481,7 @@ fContent.CanvasSize = UDim2.new(0,0,0,180)
 
 -- SETTINGS
 local sContent = contents[2]
-sContent.CanvasSize = UDim2.new(0,0,0,400)
+sContent.CanvasSize = UDim2.new(0,0,0,350)
 local sLabel = Instance.new("TextLabel")
 sLabel.Size = UDim2.new(1,0,0,28)
 sLabel.Position = UDim2.new(0,0,0,2)
@@ -919,4 +928,4 @@ pcall(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Desrt.lua"))()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Long_Road.lua"))()
 end)
-print("ASTRA HUB V3.0 — МГНОВЕННОЕ НЕБО ЗАГРУЖЕНО!")
+print("ASTRA HUB V3.0 — ОБВОДКА СНАРУЖИ ЗАГРУЖЕНА!")
