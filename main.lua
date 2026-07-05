@@ -1,4 +1,4 @@
--- ASTRA HUB V3.0 — ФИНАЛ (БЫСТРАЯ АНИМАЦИЯ + ФОН)
+-- ASTRA HUB V1.0
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
@@ -1307,4 +1307,4 @@ pcall(function()
 end)
 
 ShowToast("ASTRA HUB загружен!", true)
-print("ASTRA HUB V3.0 — БЫСТРАЯ АНИМАЦИЯ + ФОН ЗАГРУЖЕН!")
+print("ASTRA HUB V1.0)
