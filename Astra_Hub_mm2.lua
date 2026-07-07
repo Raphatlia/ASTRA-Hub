@@ -1,4 +1,4 @@
--- ASTRA HUB — МОДУЛЬ ДЛЯ MURDER MYSTERY 2 (ЛОББИ + ИГРА)
+-- ASTRA HUB — МОДУЛЬ ДЛЯ MURDER MYSTERY 2 (ПО ID/NAME)
 local Module = {}
 
 local Players = game:GetService("Players")
@@ -8,23 +8,15 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 -- ============================================
--- УНИВЕРСАЛЬНЫЙ ДЕТЕКТОР MM2 (ЛОББИ + ИГРА)
+-- ДЕТЕКТОР MM2 ПО ID И НАЗВАНИЮ
 -- ============================================
 local function IsMM2Game()
-    -- Проверяем ЛОББИ MM2 (кнопки + уникальные объекты)
-    for _, obj in pairs(game:GetDescendants()) do
-        if obj.Name == "Play" or obj.Name == "Shop" or obj.Name == "Leave" then
-            if Workspace:FindFirstChild("Map", true) and Workspace:FindFirstChild("Lobby", true) then
-                return true
-            end
-        end
-    end
-    
-    -- Проверяем ИГРУ MM2 (катка)
-    if Workspace:FindFirstChild("Murderer", true) or Workspace:FindFirstChild("Sheriff", true) then
+    if game.PlaceId == 142823291 then
         return true
     end
-    
+    if string.match(game.Name, "Murder Mystery 2") then
+        return true
+    end
     return false
 end
 
