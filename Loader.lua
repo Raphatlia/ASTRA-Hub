@@ -5,7 +5,8 @@ local HttpService = game:GetService("HttpService")
 local Files = {
     ["main"] = "https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/main.lua",
     ["AstraHub_A_Desrt"] = "https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Desrt.lua",
-    ["AstraHub_A_Long_Road"] = "https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Long_Road.lua"
+    ["AstraHub_A_Long_Road"] = "https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Long_Road.lua",
+    ["Astra_Hub_mm2"] = "https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/Astra_Hub_mm2.lua"  -- <-- НОВЫЙ
 }
 
 -- Создаём папку в ReplicatedStorage, если её нет
