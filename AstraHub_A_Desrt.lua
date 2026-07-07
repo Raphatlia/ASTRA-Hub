@@ -1,22 +1,16 @@
--- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT (УНИКАЛЬНЫЙ ДЕТЕКТОР)
+-- ASTRA HUB — МОДУЛЬ ДЛЯ A DESERT (ПО ID/NAME)
 local Module = {}
 
 -- ============================================
--- ТОЧНЫЙ ДЕТЕКТОР A DESERT
+-- ДЕТЕКТОР A DESERT ПО ID И НАЗВАНИЮ
 -- ============================================
 local function IsDesrtGame()
-    local hasDesrtUI = false
-    for _, obj in pairs(game:GetDescendants()) do
-        if obj.Name == "Sandbox+" or obj.Name == "Ignition" or obj.Name == "Join" then
-            hasDesrtUI = true
-            break
-        end
-    end
+    -- Если это MM2 — сразу вырубаемся
+    if game.PlaceId == 142823291 then return false end
     
-    if hasDesrtUI then
-        if workspace:FindFirstChild("car", true) or workspace:FindFirstChild("Zombie", true) then
-            return true
-        end
+    -- Проверяем по названию
+    if string.match(game.Name, "Desrt") or string.match(game.Name, "Desert") then
+        return true
     end
     
     return false
