@@ -1,62 +1,48 @@
--- ASTRA HUB — Модуль Murder Mystery 2
--- Автор: Raphatlia
--- Репозиторий: https://github.com/Raphatlia/ASTRA-Hub
-
+-- ASTRA HUB — МОДУЛЬ ДЛЯ MURDER MYSTERY 2
 local Module = {}
+
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local RunService = game:GetService("RunService")
+local LP = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Детектор игры MM2
+-- Детектор MM2
 local function IsMM2Game()
     if Workspace:FindFirstChild("Murderer", true) then return true end
     if Workspace:FindFirstChild("Sheriff", true) then return true end
-    if Player:FindFirstChild("PlayerGui") and Player.PlayerGui:FindFirstChild("GameGui") then return true end
+    if LP:FindFirstChild("PlayerGui") and LP.PlayerGui:FindFirstChild("GameGui") then return true end
     return false
 end
 
 if not IsMM2Game() then
-    print("[ASTRA] Не MM2, модуль не загружен")
+    print("[ASTRA] Не MM2, модуль отключён")
     return Module
 end
 
 print("[ASTRA] Murder Mystery 2 обнаружена! Загружаю функции...")
 
--- Переменные для функций
-local ESPEnabled = false
-local ESPLines = {}
-local XRayEnabled = false
-local FlyEnabled = false
-local FlySpeed = 50
-local SpeedEnabled = false
-local SpeedMultiplier = 1.5
-local AimbotEnabled = false
-local SilentAimEnabled = false
+-- Переменные
+local espEnabled = false
+local xrayEnabled = false
+local flyEnabled = false
+local flySpeed = 50
+local speedEnabled = false
+local speedMultiplier = 1.5
+local aimbotEnabled = false
+local silentAimEnabled = false
 local flyConnection = nil
 
--- Функция ESP
+-- ESP
 local function ToggleESP(state)
-    ESPEnabled = state
-    if state then
-        print("[ASTRA] ESP включён")
-        ShowToast("ESP ON")
-    else
-        print("[ASTRA] ESP выключен")
-        for _, line in pairs(ESPLines) do
-            line:Destroy()
-        end
-        ESPLines = {}
-        ShowToast("ESP OFF")
-    end
+    espEnabled = state
+    print("[ASTRA] ESP: " .. (state and "ON" or "OFF"))
 end
 
--- Функция X-Ray
+-- X-Ray
 local function ToggleXRay(state)
-    XRayEnabled = state
+    xrayEnabled = state
     if state then
-        print("[ASTRA] X-Ray включён")
         for _, v in pairs(Workspace:GetDescendants()) do
             if v:IsA("Part") or v:IsA("MeshPart") then
                 if not v.Parent:FindFirstChild("Humanoid") then
@@ -64,94 +50,91 @@ local function ToggleXRay(state)
                 end
             end
         end
-        ShowToast("X-Ray ON")
     else
-        print("[ASTRA] X-Ray выключен")
         for _, v in pairs(Workspace:GetDescendants()) do
             if v:IsA("Part") or v:IsA("MeshPart") then
                 v.LocalTransparencyModifier = 0
             end
         end
-        ShowToast("X-Ray OFF")
     end
+    print("[ASTRA] X-Ray: " .. (state and "ON" or "OFF"))
 end
 
--- Функция Fly
+-- Fly
 local function ToggleFly(state)
-    FlyEnabled = state
+    flyEnabled = state
     if state then
-        print("[ASTRA] Fly включён")
-        local char = Player.Character
+        local char = LP.Character
         if char and char:FindFirstChild("Humanoid") then
             char.Humanoid.PlatformStand = true
         end
         if flyConnection then flyConnection:Disconnect() end
         flyConnection = RunService.RenderStepped:Connect(function()
-            if not FlyEnabled then
+            if not flyEnabled then
                 if flyConnection then flyConnection:Disconnect() end
                 return
             end
-            local char = Player.Character
+            local char = LP.Character
             if not char then return end
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if not hrp then return end
             local moveDir = Vector3.new(0, 0, 0)
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Vector3.new(0, 0, -FlySpeed) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir + Vector3.new(0, 0, FlySpeed) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir + Vector3.new(-FlySpeed, 0, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Vector3.new(FlySpeed, 0, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, FlySpeed, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir + Vector3.new(0, -FlySpeed, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Vector3.new(0, 0, -flySpeed) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir + Vector3.new(0, 0, flySpeed) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir + Vector3.new(-flySpeed, 0, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Vector3.new(flySpeed, 0, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, flySpeed, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir + Vector3.new(0, -flySpeed, 0) end
             hrp.Velocity = moveDir
         end)
-        ShowToast("Fly ON")
     else
-        print("[ASTRA] Fly выключен")
-        if flyConnection then 
+        if flyConnection then
             flyConnection:Disconnect()
             flyConnection = nil
         end
-        local char = Player.Character
+        local char = LP.Character
         if char and char:FindFirstChild("Humanoid") then
             char.Humanoid.PlatformStand = false
         end
-        ShowToast("Fly OFF")
     end
+    print("[ASTRA] Fly: " .. (state and "ON" or "OFF"))
 end
 
--- Функция Speed
+-- Speed
 local function ToggleSpeed(state)
-    SpeedEnabled = state
-    local char = Player.Character
+    speedEnabled = state
+    local char = LP.Character
     if char and char:FindFirstChild("Humanoid") then
-        if state then
-            char.Humanoid.WalkSpeed = 16 * SpeedMultiplier
-            ShowToast("Speed ON")
-        else
-            char.Humanoid.WalkSpeed = 16
-            ShowToast("Speed OFF")
-        end
+        char.Humanoid.WalkSpeed = state and (16 * speedMultiplier) or 16
     end
+    print("[ASTRA] Speed: " .. (state and "ON" or "OFF"))
 end
 
--- Функция Aimbot
+-- Aimbot
 local function ToggleAimbot(state)
-    AimbotEnabled = state
-    ShowToast("Aimbot " .. (state and "ON" or "OFF"))
+    aimbotEnabled = state
+    print("[ASTRA] Aimbot: " .. (state and "ON" or "OFF"))
 end
 
--- Функция Silent Aim
+-- Silent Aim
 local function ToggleSilentAim(state)
-    SilentAimEnabled = state
-    ShowToast("Silent Aim " .. (state and "ON" or "OFF"))
+    silentAimEnabled = state
+    print("[ASTRA] Silent Aim: " .. (state and "ON" or "OFF"))
 end
 
--- Экспорт функций
-Module.ToggleESP = ToggleESP
-Module.ToggleXRay = ToggleXRay
-Module.ToggleFly = ToggleFly
-Module.ToggleSpeed = ToggleSpeed
-Module.ToggleAimbot = ToggleAimbot
-Module.ToggleSilentAim = ToggleSilentAim
+-- Подписка на события
+local Events = getgenv().AstraEvents
+if Events then
+    Events:Connect("ESP", function(state) ToggleESP(state) end)
+    Events:Connect("XRay", function(state) ToggleXRay(state) end)
+    Events:Connect("Fly", function(state) ToggleFly(state) end)
+    Events:Connect("Speed", function(state) ToggleSpeed(state) end)
+    Events:Connect("Aimbot", function(state) ToggleAimbot(state) end)
+    Events:Connect("SilentAim", function(state) ToggleSilentAim(state) end)
+end
+
+-- Автозапуск
+task.wait(1)
+print("[ASTRA] Модуль Murder Mystery 2 загружен!")
 
 return Module
