@@ -1072,12 +1072,13 @@ for i, btn in pairs(tabBtns) do
 end
 
 -- ============================================
--- ЗАГРУЗКА МОДУЛЕЙ
+-- ЗАГРУЗКА МОДУЛЕЙ (ИСПРАВЛЕНО — ДОБАВЛЕН MM2)
 -- ============================================
 task.wait(1)
 pcall(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Desrt.lua"))()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/AstraHub_A_Long_Road.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Raphatlia/ASTRA-Hub/main/Astra_Hub_mm2.lua"))()
 end)
 
 ShowToast("ASTRA HUB загружен!", true)
