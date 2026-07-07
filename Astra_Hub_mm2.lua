@@ -1,4 +1,4 @@
--- ASTRA HUB — МОДУЛЬ ДЛЯ MURDER MYSTERY 2
+-- ASTRA HUB — МОДУЛЬ ДЛЯ MURDER MYSTERY 2 (ЛОББИ + ИГРА)
 local Module = {}
 
 local Players = game:GetService("Players")
@@ -7,14 +7,28 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
--- Детектор MM2
+-- ============================================
+-- УНИВЕРСАЛЬНЫЙ ДЕТЕКТОР MM2 (ЛОББИ + ИГРА)
+-- ============================================
 local function IsMM2Game()
-    if Workspace:FindFirstChild("Murderer", true) then return true end
-    if Workspace:FindFirstChild("Sheriff", true) then return true end
-    if LP:FindFirstChild("PlayerGui") and LP.PlayerGui:FindFirstChild("GameGui") then return true end
+    -- Проверяем ЛОББИ MM2 (кнопки + уникальные объекты)
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj.Name == "Play" or obj.Name == "Shop" or obj.Name == "Leave" then
+            if Workspace:FindFirstChild("Map", true) and Workspace:FindFirstChild("Lobby", true) then
+                return true
+            end
+        end
+    end
+    
+    -- Проверяем ИГРУ MM2 (катка)
+    if Workspace:FindFirstChild("Murderer", true) or Workspace:FindFirstChild("Sheriff", true) then
+        return true
+    end
+    
     return false
 end
 
+-- Если игра не MM2 — отключаем модуль
 if not IsMM2Game() then
     print("[ASTRA] Не MM2, модуль отключён")
     return Module
@@ -22,7 +36,9 @@ end
 
 print("[ASTRA] Murder Mystery 2 обнаружена! Загружаю функции...")
 
--- Переменные
+-- ============================================
+-- ПЕРЕМЕННЫЕ
+-- ============================================
 local espEnabled = false
 local xrayEnabled = false
 local flyEnabled = false
@@ -33,13 +49,17 @@ local aimbotEnabled = false
 local silentAimEnabled = false
 local flyConnection = nil
 
+-- ============================================
 -- ESP
+-- ============================================
 local function ToggleESP(state)
     espEnabled = state
     print("[ASTRA] ESP: " .. (state and "ON" or "OFF"))
 end
 
--- X-Ray
+-- ============================================
+-- X-RAY
+-- ============================================
 local function ToggleXRay(state)
     xrayEnabled = state
     if state then
@@ -60,7 +80,9 @@ local function ToggleXRay(state)
     print("[ASTRA] X-Ray: " .. (state and "ON" or "OFF"))
 end
 
--- Fly
+-- ============================================
+-- FLY
+-- ============================================
 local function ToggleFly(state)
     flyEnabled = state
     if state then
@@ -100,7 +122,9 @@ local function ToggleFly(state)
     print("[ASTRA] Fly: " .. (state and "ON" or "OFF"))
 end
 
--- Speed
+-- ============================================
+-- SPEED
+-- ============================================
 local function ToggleSpeed(state)
     speedEnabled = state
     local char = LP.Character
@@ -110,19 +134,25 @@ local function ToggleSpeed(state)
     print("[ASTRA] Speed: " .. (state and "ON" or "OFF"))
 end
 
--- Aimbot
+-- ============================================
+-- AIMBOT
+-- ============================================
 local function ToggleAimbot(state)
     aimbotEnabled = state
     print("[ASTRA] Aimbot: " .. (state and "ON" or "OFF"))
 end
 
--- Silent Aim
+-- ============================================
+-- SILENT AIM
+-- ============================================
 local function ToggleSilentAim(state)
     silentAimEnabled = state
     print("[ASTRA] Silent Aim: " .. (state and "ON" or "OFF"))
 end
 
--- Подписка на события
+-- ============================================
+-- ПОДПИСКА НА СОБЫТИЯ
+-- ============================================
 local Events = getgenv().AstraEvents
 if Events then
     Events:Connect("ESP", function(state) ToggleESP(state) end)
@@ -133,7 +163,9 @@ if Events then
     Events:Connect("SilentAim", function(state) ToggleSilentAim(state) end)
 end
 
--- Автозапуск
+-- ============================================
+-- АВТОЗАПУСК
+-- ============================================
 task.wait(1)
 print("[ASTRA] Модуль Murder Mystery 2 загружен!")
 
