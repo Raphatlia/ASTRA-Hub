@@ -1,5 +1,5 @@
---- ==========================================================
--- BLOX STRIKE ESP (КОМАНДНЫЙ + ПОЛОСКА ХП)
+-- ==========================================================
+-- BLOX STRIKE ESP (КОМАНДНЫЙ + ПОЛОСКА ХП) - ИСПРАВЛЕН
 -- ==========================================================
 
 local RunService = game:GetService("RunService")
@@ -9,14 +9,14 @@ local Camera = Workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local espObjects = {}
 
--- НАСТРОЙКИ
+-- НАСТРОЙКИ ПО УМОЛЧАНИЮ
 local settings = {
     Enabled = true,
     BoxColor = Color3.fromRGB(0, 255, 255),
     Thickness = 1.2,
     ShowName = true,
     ShowHealth = true,
-    ShowTeam = true, -- Включить/выключить показ тиммейтов
+    ShowTeam = false, -- По умолчанию не показываем тиммейтов (чисто враги)
     Scale = 250
 }
 
@@ -109,6 +109,7 @@ local function createToggle(yPos, text, getter, setter)
     updateUI()
 end
 
+-- ФУНКЦИЯ СОЗДАНИЯ СЛАЙДЕРА
 local function createSlider(yPos, text, getter, setter, min, max)
     local frame = Instance.new("Frame")
     frame.Parent = MainFrame
@@ -139,7 +140,7 @@ local function createSlider(yPos, text, getter, setter, min, max)
     
     local fill = Instance.new("Frame")
     fill.Parent = sliderBg
-    fill.Size = UDim2.new(getter()/max, 0, 1, 0)
+    fill.Size = UDim2.new(0, 0, 1, 0)
     fill.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
     fill.BorderSizePixel = 0
     
@@ -148,27 +149,40 @@ local function createSlider(yPos, text, getter, setter, min, max)
     fillCorner.CornerRadius = UDim.new(1, 0)
     
     local dragging = false
+    
+    local function updateSliderFromMouse(input)
+        local pos = input.Position
+        local absPos = sliderBg.AbsolutePosition
+        local absSize = sliderBg.AbsoluteSize
+        local percent = math.clamp((pos.X - absPos.X) / absSize.X, 0, 1)
+        local val = min + (max - min) * percent
+        setter(val)
+        fill.Size = UDim2.new(percent, 0, 1, 0)
+    end
+    
     sliderBg.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
+            updateSliderFromMouse(input)
         end
     end)
+    
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
         end
     end)
+    
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local pos = input.Position
-            local absPos = sliderBg.AbsolutePosition
-            local absSize = sliderBg.AbsoluteSize
-            local percent = math.clamp((pos.X - absPos.X) / absSize.X, 0, 1)
-            local val = min + (max - min) * percent
-            setter(val)
-            fill.Size = UDim2.new(percent, 0, 1, 0)
+            updateSliderFromMouse(input)
         end
     end)
+    
+    -- Инициализация полоски при старте
+    local initVal = getter()
+    local initPercent = (initVal - min) / (max - min)
+    fill.Size = UDim2.new(initPercent, 0, 1, 0)
 end
 
 -- МЕНЮ НАСТРОЕК
@@ -176,7 +190,7 @@ createToggle(50, "Enable ESP", function() return settings.Enabled end, function(
 createToggle(90, "Show Name", function() return settings.ShowName end, function(v) settings.ShowName = v end)
 createToggle(130, "Show Health", function() return settings.ShowHealth end, function(v) settings.ShowHealth = v end)
 createToggle(170, "Show Teammates", function() return settings.ShowTeam end, function(v) settings.ShowTeam = v end)
-createSlider(210, "Box Thickness", function() return settings.Thickness end, function(v) settings.Thickness = v, 0.5, 3)
+createSlider(210, "Box Thickness", function() return settings.Thickness end, function(v) settings.Thickness = v end, 0.5, 3)
 
 -- ГОРЯЧАЯ КЛАВИША F4
 local hidden = false
@@ -211,13 +225,11 @@ local function createFpsEsp()
     obj.Health.Color = Color3.fromRGB(200, 200, 200)
     obj.Health.Center = true
     
-    -- Полоска ХП (фон)
     obj.HealthBg.Size = Vector2.new(40, 4)
     obj.HealthBg.Filled = true
     obj.HealthBg.Color = Color3.fromRGB(30, 30, 30)
     obj.HealthBg.Transparency = 0.3
     
-    -- Полоска ХП (заполнение)
     obj.HealthBar.Size = Vector2.new(40, 4)
     obj.HealthBar.Filled = true
     obj.HealthBar.Color = Color3.fromRGB(0, 255, 0)
@@ -237,7 +249,6 @@ RunService.RenderStepped:Connect(function()
             local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
             
             if head and torso then
-                -- ПРОВЕРКА КОМАНДЫ
                 local isTeammate = (player.TeamColor == myTeam)
                 if isTeammate and not settings.ShowTeam then
                     if espObjects[player] then
@@ -280,14 +291,12 @@ RunService.RenderStepped:Connect(function()
                     
                     local obj = espObjects[player]
                     
-                    -- КВАДРАТ
                     obj.Box.Size = Vector2.new(width, height)
                     obj.Box.Position = Vector2.new(x, y)
                     obj.Box.Thickness = settings.Thickness
-                    obj.Box.Color = isTeammate and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Зелёный для своих, Красный для врагов
+                    obj.Box.Color = isTeammate and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
                     obj.Box.Visible = true
                     
-                    -- ИМЯ
                     if settings.ShowName then
                         obj.Name.Text = player.Name
                         obj.Name.Position = Vector2.new(torsoPos.X, headPos.Y - (height/2) - 30 * scale)
@@ -296,7 +305,6 @@ RunService.RenderStepped:Connect(function()
                         obj.Name.Visible = false
                     end
                     
-                    -- ТЕКСТ ХП
                     if settings.ShowHealth then
                         local hpText = "Alive"
                         if humanoid then
@@ -309,7 +317,6 @@ RunService.RenderStepped:Connect(function()
                         obj.Health.Visible = false
                     end
                     
-                    -- ПОЛОСКА ХП (внизу квадрата)
                     if settings.ShowHealth and humanoid then
                         local healthPercent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
                         local barY = y + height + 10
