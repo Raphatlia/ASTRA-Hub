@@ -1,5 +1,5 @@
 -- ==========================================================
--- BLOX STRIKE ESP (КОМАНДНЫЙ + ПОЛОСКА ХП) - ИСПРАВЛЕН
+-- BLOX STRIKE ESP (ИСПРАВЛЕННЫЙ + УМНЫЙ ФИЛЬТР)
 -- ==========================================================
 
 local RunService = game:GetService("RunService")
@@ -9,14 +9,14 @@ local Camera = Workspace.CurrentCamera
 local UserInputService = game:GetService("UserInputService")
 local espObjects = {}
 
--- НАСТРОЙКИ ПО УМОЛЧАНИЮ
+-- НАСТРОЙКИ
 local settings = {
     Enabled = true,
     BoxColor = Color3.fromRGB(0, 255, 255),
     Thickness = 1.2,
     ShowName = true,
     ShowHealth = true,
-    ShowTeam = false, -- По умолчанию не показываем тиммейтов (чисто враги)
+    ShowTeam = false,
     Scale = 250
 }
 
@@ -54,7 +54,7 @@ local CornerTop = Instance.new("UICorner")
 CornerTop.Parent = Title
 CornerTop.CornerRadius = UDim.new(0, 12)
 
--- ФУНКЦИЯ СОЗДАНИЯ ПЕРЕКЛЮЧАТЕЛЯ
+-- ФУНКЦИЯ СОЗДАНИЯ ПЕРЕКЛЮЧАТЕЛЯ (ИСПРАВЛЕНА!)
 local function createToggle(yPos, text, getter, setter)
     local frame = Instance.new("Frame")
     frame.Parent = MainFrame
@@ -109,7 +109,6 @@ local function createToggle(yPos, text, getter, setter)
     updateUI()
 end
 
--- ФУНКЦИЯ СОЗДАНИЯ СЛАЙДЕРА
 local function createSlider(yPos, text, getter, setter, min, max)
     local frame = Instance.new("Frame")
     frame.Parent = MainFrame
@@ -179,17 +178,16 @@ local function createSlider(yPos, text, getter, setter, min, max)
         end
     end)
     
-    -- Инициализация полоски при старте
     local initVal = getter()
     local initPercent = (initVal - min) / (max - min)
     fill.Size = UDim2.new(initPercent, 0, 1, 0)
 end
 
--- МЕНЮ НАСТРОЕК
+-- МЕНЮ НАСТРОЕК (ПОРЯДОК ИСПРАВЛЕН)
 createToggle(50, "Enable ESP", function() return settings.Enabled end, function(v) settings.Enabled = v end)
-createToggle(90, "Show Name", function() return settings.ShowName end, function(v) settings.ShowName = v end)
-createToggle(130, "Show Health", function() return settings.ShowHealth end, function(v) settings.ShowHealth = v end)
-createToggle(170, "Show Teammates", function() return settings.ShowTeam end, function(v) settings.ShowTeam = v end)
+createToggle(90, "Show Teammates", function() return settings.ShowTeam end, function(v) settings.ShowTeam = v end)
+createToggle(130, "Show Name", function() return settings.ShowName end, function(v) settings.ShowName = v end)
+createToggle(170, "Show Health", function() return settings.ShowHealth end, function(v) settings.ShowHealth = v end)
 createSlider(210, "Box Thickness", function() return settings.Thickness end, function(v) settings.Thickness = v end, 0.5, 3)
 
 -- ГОРЯЧАЯ КЛАВИША F4
@@ -236,11 +234,29 @@ local function createFpsEsp()
     return obj
 end
 
+-- УМНАЯ ПРОВЕРКА КОМАНДЫ (работает в любых играх)
+local function isEnemy(player)
+    local localPlayer = Players.LocalPlayer
+    if not localPlayer or not player then return true end
+    
+    -- 1. Если нет команды вообще (FFA режим), все враги
+    if not localPlayer.TeamColor or not player.TeamColor then
+        return true
+    end
+    
+    -- 2. Если команды одинаковые, это тиммейт
+    if localPlayer.TeamColor == player.TeamColor then
+        return false
+    end
+    
+    -- 3. Во всех остальных случаях враг
+    return true
+end
+
 RunService.RenderStepped:Connect(function()
     if not settings.Enabled then return end
     local localPlayer = Players.LocalPlayer
     if not localPlayer or not localPlayer.Character then return end
-    local myTeam = localPlayer.TeamColor
     
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= localPlayer and player.Character then
@@ -249,8 +265,10 @@ RunService.RenderStepped:Connect(function()
             local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
             
             if head and torso then
-                local isTeammate = (player.TeamColor == myTeam)
-                if isTeammate and not settings.ShowTeam then
+                local isEnemyPlayer = isEnemy(player)
+                
+                -- Если это тиммейт и мы не хотим их видеть — скрываем
+                if not isEnemyPlayer and not settings.ShowTeam then
                     if espObjects[player] then
                         espObjects[player].Box.Visible = false
                         espObjects[player].Name.Visible = false
@@ -294,7 +312,7 @@ RunService.RenderStepped:Connect(function()
                     obj.Box.Size = Vector2.new(width, height)
                     obj.Box.Position = Vector2.new(x, y)
                     obj.Box.Thickness = settings.Thickness
-                    obj.Box.Color = isTeammate and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+                    obj.Box.Color = isEnemyPlayer and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(0, 255, 0)
                     obj.Box.Visible = true
                     
                     if settings.ShowName then
@@ -356,4 +374,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-print("✅ SpaceBerq ESP (Командный) загружен! F4 - меню.")
+print("✅ SpaceBerq ESP (Умный) загружен! F4 - меню.")
