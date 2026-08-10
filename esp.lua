@@ -9,6 +9,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 
 local LP = Players.LocalPlayer
 local espObjects = {}
@@ -40,7 +41,7 @@ local BoxColors = {
 }
 
 -- ============================================
--- ФУНКЦИЯ ОЧИСТКИ ESP
+-- ФУНКЦИЯ ОЧИСТКИ ESP (ПОЛНАЯ)
 -- ============================================
 local function ClearESP()
     for player, obj in pairs(espObjects) do
@@ -51,7 +52,6 @@ local function ClearESP()
             obj.Distance:Remove()
             obj.HealthBar:Remove()
             obj.HealthBg:Remove()
-            obj.HeadDot:Remove()
         end)
     end
     espObjects = {}
@@ -61,15 +61,28 @@ end
 -- ФУНКЦИЯ СОЗДАНИЯ ОБЪЕКТОВ ESP
 -- ============================================
 local function CreateESPObject()
-    return {
+    local obj = {
         Box = Drawing.new("Square"),
         Name = Drawing.new("Text"),
         Health = Drawing.new("Text"),
         Distance = Drawing.new("Text"),
         HealthBar = Drawing.new("Square"),
-        HealthBg = Drawing.new("Square"),
-        HeadDot = Drawing.new("Circle")
+        HealthBg = Drawing.new("Square")
     }
+    obj.Box.Filled = false
+    obj.Box.Transparency = 0.4
+    obj.Name.Outline = true
+    obj.Name.OutlineColor = Color3.fromRGB(0, 0, 0)
+    obj.Name.Center = true
+    obj.Health.Outline = true
+    obj.Health.OutlineColor = Color3.fromRGB(0, 0, 0)
+    obj.Health.Center = true
+    obj.Distance.Outline = true
+    obj.Distance.OutlineColor = Color3.fromRGB(0, 0, 0)
+    obj.Distance.Center = true
+    obj.HealthBg.Filled = true
+    obj.HealthBar.Filled = true
+    return obj
 end
 
 -- ============================================
@@ -112,7 +125,7 @@ local function GetClosestEnemy()
 end
 
 -- ============================================
--- ФУНКЦИЯ ЗАПУСКА ESP
+-- ГЛАВНЫЙ ЦИКЛ
 -- ============================================
 local function StartESP()
     if renderConnection then
@@ -137,11 +150,13 @@ local function StartESP()
         
         -- ===== ESP =====
         if not settings.Enabled then
-            ClearESP()
             return
         end
         
-        if not LP or not LP.Character then return end
+        if not LP or not LP.Character then
+            ClearESP()
+            return
+        end
         
         local myTeam = LP.TeamColor
         
@@ -167,7 +182,6 @@ local function StartESP()
                     obj.Distance.Visible = false
                     obj.HealthBar.Visible = false
                     obj.HealthBg.Visible = false
-                    obj.HeadDot.Visible = false
                 end
                 continue
             end
@@ -188,7 +202,6 @@ local function StartESP()
                     obj.Distance.Visible = false
                     obj.HealthBar.Visible = false
                     obj.HealthBg.Visible = false
-                    obj.HeadDot.Visible = false
                 end
                 continue
             end
@@ -206,7 +219,6 @@ local function StartESP()
                     obj.Distance.Visible = false
                     obj.HealthBar.Visible = false
                     obj.HealthBg.Visible = false
-                    obj.HeadDot.Visible = false
                 end
                 continue
             end
@@ -214,9 +226,6 @@ local function StartESP()
             -- СОЗДАЕМ ОБЪЕКТ
             if not espObjects[player] then
                 espObjects[player] = CreateESPObject()
-                espObjects[player].HeadDot.Filled = true
-                espObjects[player].HeadDot.Transparency = 0.5
-                espObjects[player].HeadDot.Radius = 4
             end
             
             local obj = espObjects[player]
@@ -242,14 +251,7 @@ local function StartESP()
             obj.Box.Position = Vector2.new(x, y)
             obj.Box.Thickness = settings.BoxThickness
             obj.Box.Color = boxColor
-            obj.Box.Filled = false
-            obj.Box.Transparency = settings.Transparency
             obj.Box.Visible = true
-            
-            -- ТОЧКА НА ГОЛОВЕ
-            obj.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
-            obj.HeadDot.Color = boxColor
-            obj.HeadDot.Visible = true
             
             -- ИМЯ
             if settings.ShowName then
@@ -257,8 +259,6 @@ local function StartESP()
                 obj.Name.Position = Vector2.new(torsoPos.X, y - 20 * scale)
                 obj.Name.Color = Color3.fromRGB(255, 255, 255)
                 obj.Name.Size = 14
-                obj.Name.Center = true
-                obj.Name.Outline = true
                 obj.Name.Visible = true
             else
                 obj.Name.Visible = false
@@ -270,8 +270,6 @@ local function StartESP()
                 obj.Distance.Position = Vector2.new(torsoPos.X, y + height + 20 * scale)
                 obj.Distance.Color = Color3.fromRGB(200, 200, 210)
                 obj.Distance.Size = 12
-                obj.Distance.Center = true
-                obj.Distance.Outline = true
                 obj.Distance.Visible = true
             else
                 obj.Distance.Visible = false
@@ -285,8 +283,6 @@ local function StartESP()
                 obj.Health.Position = Vector2.new(torsoPos.X, y + height + 36 * scale)
                 obj.Health.Color = Color3.fromRGB(200, 200, 210)
                 obj.Health.Size = 12
-                obj.Health.Center = true
-                obj.Health.Outline = true
                 obj.Health.Visible = true
             else
                 obj.Health.Visible = false
@@ -302,7 +298,6 @@ local function StartESP()
                 obj.HealthBg.Size = Vector2.new(barWidth, barHeight)
                 obj.HealthBg.Position = Vector2.new(x + (width - barWidth) / 2, barY)
                 obj.HealthBg.Color = Color3.fromRGB(30, 30, 40)
-                obj.HealthBg.Filled = true
                 obj.HealthBg.Transparency = 0.3
                 obj.HealthBg.Visible = true
                 
@@ -313,7 +308,6 @@ local function StartESP()
                     math.floor(255 * healthPercent),
                     0
                 )
-                obj.HealthBar.Filled = true
                 obj.HealthBar.Transparency = 0.1
                 obj.HealthBar.Visible = true
             else
@@ -332,7 +326,6 @@ local function StartESP()
                     obj.Distance:Remove()
                     obj.HealthBar:Remove()
                     obj.HealthBg:Remove()
-                    obj.HeadDot:Remove()
                 end)
                 espObjects[player] = nil
             end
@@ -341,7 +334,7 @@ local function StartESP()
 end
 
 -- ============================================
--- ФУНКЦИЯ ОСТАНОВКИ ESP
+-- ФУНКЦИЯ ОСТАНОВКИ
 -- ============================================
 local function StopESP()
     if renderConnection then
@@ -352,7 +345,7 @@ local function StopESP()
 end
 
 -- ============================================
--- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ESP
+-- ПЕРЕКЛЮЧЕНИЕ
 -- ============================================
 local function ToggleESP(state)
     settings.Enabled = state
@@ -363,15 +356,12 @@ local function ToggleESP(state)
     end
 end
 
--- ============================================
--- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ AIMBOT
--- ============================================
 local function ToggleAimbot(state)
     settings.Aimbot = state
 end
 
 -- ============================================
--- СОЗДАНИЕ ГУИ (БОЛЬШОЙ РАЗМЕР)
+-- СОЗДАНИЕ ГУИ
 -- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BloxStrike_ESP"
@@ -504,7 +494,9 @@ ScrollLayout.Padding = UDim.new(0, 8)
 ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ScrollLayout.Parent = ScrollFrame
 
--- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ
+-- ============================================
+-- ФУНКЦИЯ СОЗДАНИЯ СВИТЧА
+-- ============================================
 local function CreateToggle(parent, text, getter, setter)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, -10, 0, 40)
@@ -567,7 +559,9 @@ local function CreateToggle(parent, text, getter, setter)
     return frame
 end
 
+-- ============================================
 -- ФУНКЦИЯ СОЗДАНИЯ ДРОПДАУНА
+-- ============================================
 local function CreateDropdown(parent, text, options, getter, setter)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, -10, 0, 40)
@@ -670,7 +664,9 @@ local function CreateDropdown(parent, text, options, getter, setter)
     return frame
 end
 
+-- ============================================
 -- ФУНКЦИЯ СОЗДАНИЯ СЛАЙДЕРА
+-- ============================================
 local function CreateSlider(parent, text, getter, setter, min, max)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, -10, 0, 46)
@@ -766,7 +762,9 @@ local function CreateSlider(parent, text, getter, setter, min, max)
     return frame
 end
 
+-- ============================================
 -- РАЗДЕЛИТЕЛЬ
+-- ============================================
 local function CreateSeparator(parent)
     local sep = Instance.new("Frame")
     sep.Size = UDim2.new(0.9, 0, 0, 1)
