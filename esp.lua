@@ -1,5 +1,5 @@
 -- ==========================================================
--- BLOX STRIKE ESP + ГУИ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+-- BLOX STRIKE ESP + AIMBOT (XENO OPTIMIZED)
 -- ==========================================================
 
 local Players = game:GetService("Players")
@@ -25,7 +25,10 @@ local settings = {
     ShowDistance = true,
     BoxThickness = 1.5,
     BoxColor = "Red",
-    Transparency = 0.4
+    Transparency = 0.4,
+    Aimbot = false,
+    AimbotSmoothness = 8,
+    AimbotFOV = 100
 }
 
 local BoxColors = {
@@ -48,6 +51,7 @@ local function ClearESP()
             obj.Distance:Remove()
             obj.HealthBar:Remove()
             obj.HealthBg:Remove()
+            obj.HeadDot:Remove()
         end)
     end
     espObjects = {}
@@ -63,8 +67,48 @@ local function CreateESPObject()
         Health = Drawing.new("Text"),
         Distance = Drawing.new("Text"),
         HealthBar = Drawing.new("Square"),
-        HealthBg = Drawing.new("Square")
+        HealthBg = Drawing.new("Square"),
+        HeadDot = Drawing.new("Circle")
     }
+end
+
+-- ============================================
+-- АИМБОТ
+-- ============================================
+local function GetClosestEnemy()
+    if not LP or not LP.Character then return nil end
+    
+    local myTeam = LP.TeamColor
+    local closest = nil
+    local closestDist = math.huge
+    local center = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player == LP then continue end
+        if not player.Character then continue end
+        
+        local char = player.Character
+        local head = char:FindFirstChild("Head")
+        if not head then continue end
+        
+        local isTeammate = false
+        if myTeam and player.TeamColor then
+            isTeammate = (myTeam == player.TeamColor)
+        end
+        
+        if isTeammate and not settings.ShowTeam then continue end
+        
+        local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+        if not onScreen then continue end
+        
+        local dist = (Vector2.new(pos.X, pos.Y) - center).Magnitude
+        if dist < closestDist and dist < settings.AimbotFOV then
+            closestDist = dist
+            closest = head
+        end
+    end
+    
+    return closest
 end
 
 -- ============================================
@@ -79,6 +123,19 @@ local function StartESP()
     ClearESP()
     
     renderConnection = RunService.RenderStepped:Connect(function()
+        -- ===== AIMBOT =====
+        if settings.Aimbot then
+            local target = GetClosestEnemy()
+            if target then
+                local lookPos = target.Position
+                local currentCF = Camera.CFrame
+                local targetCF = CFrame.new(currentCF.Position, lookPos)
+                local smooth = settings.AimbotSmoothness / 100
+                Camera.CFrame = currentCF:Lerp(targetCF, smooth)
+            end
+        end
+        
+        -- ===== ESP =====
         if not settings.Enabled then
             ClearESP()
             return
@@ -94,7 +151,8 @@ local function StartESP()
             
             local char = player.Character
             local head = char:FindFirstChild("Head")
-            local torso = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+            local root = char:FindFirstChild("HumanoidRootPart")
+            local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso") or root
             local humanoid = char:FindFirstChild("Humanoid")
             
             if not head or not torso or not humanoid then continue end
@@ -109,6 +167,7 @@ local function StartESP()
                     obj.Distance.Visible = false
                     obj.HealthBar.Visible = false
                     obj.HealthBg.Visible = false
+                    obj.HeadDot.Visible = false
                 end
                 continue
             end
@@ -129,6 +188,7 @@ local function StartESP()
                     obj.Distance.Visible = false
                     obj.HealthBar.Visible = false
                     obj.HealthBg.Visible = false
+                    obj.HeadDot.Visible = false
                 end
                 continue
             end
@@ -146,6 +206,7 @@ local function StartESP()
                     obj.Distance.Visible = false
                     obj.HealthBar.Visible = false
                     obj.HealthBg.Visible = false
+                    obj.HeadDot.Visible = false
                 end
                 continue
             end
@@ -153,17 +214,20 @@ local function StartESP()
             -- СОЗДАЕМ ОБЪЕКТ
             if not espObjects[player] then
                 espObjects[player] = CreateESPObject()
+                espObjects[player].HeadDot.Filled = true
+                espObjects[player].HeadDot.Transparency = 0.5
+                espObjects[player].HeadDot.Radius = 4
             end
             
             local obj = espObjects[player]
             local distance = math.floor((Camera.CFrame.Position - torso.Position).Magnitude)
-            local scale = math.clamp(450 / distance, 0.4, 2.0)
+            local scale = math.clamp(400 / distance, 0.35, 2.0)
             
-            -- РАЗМЕРЫ
-            local width = 55 * scale
-            local height = (math.abs(headPos.Y - torsoPos.Y)) + 15 * scale
+            -- РАЗМЕРЫ (ПРАВИЛЬНАЯ МАТЕМАТИКА)
+            local height = (math.abs(headPos.Y - torsoPos.Y)) * 1.8 + 20 * scale
+            local width = height * 0.6
             local x = torsoPos.X - (width / 2)
-            local y = headPos.Y - (height / 2) - 5 * scale
+            local y = headPos.Y - (height / 1.2)
             
             -- ЦВЕТА
             local boxColor
@@ -182,12 +246,17 @@ local function StartESP()
             obj.Box.Transparency = settings.Transparency
             obj.Box.Visible = true
             
+            -- ТОЧКА НА ГОЛОВЕ
+            obj.HeadDot.Position = Vector2.new(headPos.X, headPos.Y)
+            obj.HeadDot.Color = boxColor
+            obj.HeadDot.Visible = true
+            
             -- ИМЯ
             if settings.ShowName then
                 obj.Name.Text = player.Name
-                obj.Name.Position = Vector2.new(torsoPos.X, headPos.Y - (height/2) - 25 * scale)
+                obj.Name.Position = Vector2.new(torsoPos.X, y - 20 * scale)
                 obj.Name.Color = Color3.fromRGB(255, 255, 255)
-                obj.Name.Size = 13
+                obj.Name.Size = 14
                 obj.Name.Center = true
                 obj.Name.Outline = true
                 obj.Name.Visible = true
@@ -198,9 +267,9 @@ local function StartESP()
             -- ДИСТАНЦИЯ
             if settings.ShowDistance then
                 obj.Distance.Text = distance .. "m"
-                obj.Distance.Position = Vector2.new(torsoPos.X, headPos.Y + (height/2) + 10 * scale)
+                obj.Distance.Position = Vector2.new(torsoPos.X, y + height + 20 * scale)
                 obj.Distance.Color = Color3.fromRGB(200, 200, 210)
-                obj.Distance.Size = 11
+                obj.Distance.Size = 12
                 obj.Distance.Center = true
                 obj.Distance.Outline = true
                 obj.Distance.Visible = true
@@ -212,10 +281,10 @@ local function StartESP()
             if settings.ShowHealth then
                 local hp = math.floor(humanoid.Health)
                 local maxHp = math.floor(humanoid.MaxHealth)
-                obj.Health.Text = hp .. "/" .. maxHp .. " HP"
-                obj.Health.Position = Vector2.new(torsoPos.X, torsoPos.Y + 20 * scale)
+                obj.Health.Text = hp .. "/" .. maxHp
+                obj.Health.Position = Vector2.new(torsoPos.X, y + height + 36 * scale)
                 obj.Health.Color = Color3.fromRGB(200, 200, 210)
-                obj.Health.Size = 11
+                obj.Health.Size = 12
                 obj.Health.Center = true
                 obj.Health.Outline = true
                 obj.Health.Visible = true
@@ -226,19 +295,19 @@ local function StartESP()
             -- ПОЛОСКА ХП
             if settings.ShowHealth then
                 local healthPercent = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
-                local barY = y + height + 8 * scale
-                local barWidth = width - 10
+                local barY = y + height + 4 * scale
+                local barWidth = width * 0.8
                 local barHeight = 4 * scale
                 
                 obj.HealthBg.Size = Vector2.new(barWidth, barHeight)
-                obj.HealthBg.Position = Vector2.new(x + 5, barY)
+                obj.HealthBg.Position = Vector2.new(x + (width - barWidth) / 2, barY)
                 obj.HealthBg.Color = Color3.fromRGB(30, 30, 40)
                 obj.HealthBg.Filled = true
                 obj.HealthBg.Transparency = 0.3
                 obj.HealthBg.Visible = true
                 
                 obj.HealthBar.Size = Vector2.new(barWidth * healthPercent, barHeight)
-                obj.HealthBar.Position = Vector2.new(x + 5, barY)
+                obj.HealthBar.Position = Vector2.new(x + (width - barWidth) / 2, barY)
                 obj.HealthBar.Color = Color3.fromRGB(
                     math.floor(255 * (1 - healthPercent)),
                     math.floor(255 * healthPercent),
@@ -263,6 +332,7 @@ local function StartESP()
                     obj.Distance:Remove()
                     obj.HealthBar:Remove()
                     obj.HealthBg:Remove()
+                    obj.HeadDot:Remove()
                 end)
                 espObjects[player] = nil
             end
@@ -294,6 +364,13 @@ local function ToggleESP(state)
 end
 
 -- ============================================
+-- ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ AIMBOT
+-- ============================================
+local function ToggleAimbot(state)
+    settings.Aimbot = state
+end
+
+-- ============================================
 -- СОЗДАНИЕ ГУИ (БОЛЬШОЙ РАЗМЕР)
 -- ============================================
 local ScreenGui = Instance.new("ScreenGui")
@@ -301,12 +378,10 @@ ScreenGui.Name = "BloxStrike_ESP"
 ScreenGui.Parent = CoreGui
 ScreenGui.IgnoreGuiInset = true
 
--- ============================================
--- ОСНОВНОЙ ФРЕЙМ (УВЕЛИЧЕННЫЙ)
--- ============================================
+-- ОСНОВНОЙ ФРЕЙМ
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 300, 0, 420)
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
+MainFrame.Size = UDim2.new(0, 320, 0, 480)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -240)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
 MainFrame.BackgroundTransparency = 0.1
@@ -323,9 +398,7 @@ UIStroke.Thickness = 2
 UIStroke.Transparency = 0.2
 UIStroke.Parent = MainFrame
 
--- ============================================
 -- ЗАГОЛОВОК
--- ============================================
 local Title = Instance.new("Frame")
 Title.Size = UDim2.new(1, 0, 0, 44)
 Title.Position = UDim2.new(0, 0, 0, 0)
@@ -338,7 +411,6 @@ local TitleCorner = Instance.new("UICorner")
 TitleCorner.CornerRadius = UDim.new(0, 14)
 TitleCorner.Parent = Title
 
--- ЛОГО (ТЕКСТОМ)
 local Logo = Instance.new("TextLabel")
 Logo.Size = UDim2.new(0, 30, 1, 0)
 Logo.Position = UDim2.new(0, 12, 0, 0)
@@ -361,7 +433,6 @@ TitleText.TextSize = 17
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = Title
 
--- КНОПКА ЗАКРЫТИЯ (КРЕСТИК ТЕКСТОМ)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 34, 0, 34)
 CloseBtn.Position = UDim2.new(1, -40, 0.5, 0)
@@ -382,9 +453,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
--- ============================================
 -- DRAGGABLE
--- ============================================
 local dragging = false
 local dragInput, mousePos, framePos
 
@@ -418,9 +487,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ============================================
 -- СКРОЛЛИНГ
--- ============================================
 local ScrollFrame = Instance.new("ScrollingFrame")
 ScrollFrame.Size = UDim2.new(1, -14, 1, -54)
 ScrollFrame.Position = UDim2.new(0, 7, 0, 48)
@@ -437,9 +504,7 @@ ScrollLayout.Padding = UDim.new(0, 8)
 ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ScrollLayout.Parent = ScrollFrame
 
--- ============================================
--- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ (БОЛЬШЕ РАЗМЕР)
--- ============================================
+-- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ
 local function CreateToggle(parent, text, getter, setter)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, -10, 0, 40)
@@ -502,9 +567,7 @@ local function CreateToggle(parent, text, getter, setter)
     return frame
 end
 
--- ============================================
 -- ФУНКЦИЯ СОЗДАНИЯ ДРОПДАУНА
--- ============================================
 local function CreateDropdown(parent, text, options, getter, setter)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, -10, 0, 40)
@@ -607,9 +670,7 @@ local function CreateDropdown(parent, text, options, getter, setter)
     return frame
 end
 
--- ============================================
 -- ФУНКЦИЯ СОЗДАНИЯ СЛАЙДЕРА
--- ============================================
 local function CreateSlider(parent, text, getter, setter, min, max)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, -10, 0, 46)
@@ -705,9 +766,7 @@ local function CreateSlider(parent, text, getter, setter, min, max)
     return frame
 end
 
--- ============================================
 -- РАЗДЕЛИТЕЛЬ
--- ============================================
 local function CreateSeparator(parent)
     local sep = Instance.new("Frame")
     sep.Size = UDim2.new(0.9, 0, 0, 1)
@@ -722,10 +781,14 @@ end
 -- ============================================
 -- СОЗДАЕМ НАСТРОЙКИ
 -- ============================================
--- Основные
 CreateToggle(ScrollFrame, "Enable ESP", 
     function() return settings.Enabled end, 
     function(v) ToggleESP(v) end
+)
+
+CreateToggle(ScrollFrame, "Enable Aimbot", 
+    function() return settings.Aimbot end, 
+    function(v) ToggleAimbot(v) end
 )
 
 CreateToggle(ScrollFrame, "Show Teammates", 
@@ -735,7 +798,6 @@ CreateToggle(ScrollFrame, "Show Teammates",
 
 CreateSeparator(ScrollFrame)
 
--- Отображение
 CreateToggle(ScrollFrame, "Show Name", 
     function() return settings.ShowName end, 
     function(v) settings.ShowName = v end
@@ -753,7 +815,6 @@ CreateToggle(ScrollFrame, "Show Distance",
 
 CreateSeparator(ScrollFrame)
 
--- Внешний вид
 CreateSlider(ScrollFrame, "Box Thickness", 
     function() return settings.BoxThickness end, 
     function(v) settings.BoxThickness = v end, 
@@ -764,6 +825,18 @@ CreateSlider(ScrollFrame, "Transparency",
     function() return settings.Transparency end, 
     function(v) settings.Transparency = v end, 
     0.1, 0.8
+)
+
+CreateSlider(ScrollFrame, "Aimbot Smoothness", 
+    function() return settings.AimbotSmoothness end, 
+    function(v) settings.AimbotSmoothness = v end, 
+    1, 20
+)
+
+CreateSlider(ScrollFrame, "Aimbot FOV", 
+    function() return settings.AimbotFOV end, 
+    function(v) settings.AimbotFOV = v end, 
+    20, 300
 )
 
 CreateDropdown(ScrollFrame, "Box Color", {"Red", "Green", "Blue", "Purple", "Yellow"},
@@ -792,4 +865,4 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
-print("✅ BloxStrike ESP загружен! F4 - открыть/закрыть меню.")
+print("✅ BloxStrike ESP + Aimbot загружен! F4 - меню.")
