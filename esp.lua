@@ -1,5 +1,5 @@
 -- ==========================================================
--- BLOX STRIKE ESP + КРАСИВЫЙ ГУИ (ПОЛНАЯ ВЕРСИЯ)
+-- BLOX STRIKE ESP + ГУИ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 -- ==========================================================
 
 local Players = game:GetService("Players")
@@ -12,7 +12,6 @@ local CoreGui = game:GetService("CoreGui")
 
 local LP = Players.LocalPlayer
 local espObjects = {}
-local espActive = false
 local renderConnection = nil
 
 -- ============================================
@@ -25,13 +24,10 @@ local settings = {
     ShowHealth = true,
     ShowDistance = true,
     BoxThickness = 1.5,
-    BoxColor = "Red", -- Red, Green, Blue, Purple, Yellow
+    BoxColor = "Red",
     Transparency = 0.4
 }
 
--- ============================================
--- ЦВЕТА ДЛЯ БОКСОВ
--- ============================================
 local BoxColors = {
     Red = Color3.fromRGB(255, 50, 50),
     Green = Color3.fromRGB(50, 255, 50),
@@ -81,7 +77,6 @@ local function StartESP()
     end
     
     ClearESP()
-    espActive = true
     
     renderConnection = RunService.RenderStepped:Connect(function()
         if not settings.Enabled then
@@ -279,7 +274,6 @@ end
 -- ФУНКЦИЯ ОСТАНОВКИ ESP
 -- ============================================
 local function StopESP()
-    espActive = false
     if renderConnection then
         renderConnection:Disconnect()
         renderConnection = nil
@@ -300,7 +294,7 @@ local function ToggleESP(state)
 end
 
 -- ============================================
--- СОЗДАНИЕ ГУИ
+-- СОЗДАНИЕ ГУИ (БОЛЬШОЙ РАЗМЕР)
 -- ============================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BloxStrike_ESP"
@@ -308,11 +302,11 @@ ScreenGui.Parent = CoreGui
 ScreenGui.IgnoreGuiInset = true
 
 -- ============================================
--- ОСНОВНОЙ ФРЕЙМ
+-- ОСНОВНОЙ ФРЕЙМ (УВЕЛИЧЕННЫЙ)
 -- ============================================
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 260, 0, 380)
-MainFrame.Position = UDim2.new(0.5, -130, 0.5, -190)
+MainFrame.Size = UDim2.new(0, 300, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -210)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
 MainFrame.BackgroundTransparency = 0.1
@@ -323,7 +317,6 @@ local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 14)
 UICorner.Parent = MainFrame
 
--- ОБВОДКА
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Color = Color3.fromRGB(138, 43, 226)
 UIStroke.Thickness = 2
@@ -334,7 +327,7 @@ UIStroke.Parent = MainFrame
 -- ЗАГОЛОВОК
 -- ============================================
 local Title = Instance.new("Frame")
-Title.Size = UDim2.new(1, 0, 0, 42)
+Title.Size = UDim2.new(1, 0, 0, 44)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = Color3.fromRGB(40, 35, 55)
 Title.BackgroundTransparency = 0.2
@@ -345,27 +338,39 @@ local TitleCorner = Instance.new("UICorner")
 TitleCorner.CornerRadius = UDim.new(0, 14)
 TitleCorner.Parent = Title
 
+-- ЛОГО (ТЕКСТОМ)
+local Logo = Instance.new("TextLabel")
+Logo.Size = UDim2.new(0, 30, 1, 0)
+Logo.Position = UDim2.new(0, 12, 0, 0)
+Logo.BackgroundTransparency = 1
+Logo.Text = "✦"
+Logo.TextColor3 = Color3.fromRGB(138, 43, 226)
+Logo.TextSize = 22
+Logo.Font = Enum.Font.GothamBold
+Logo.TextXAlignment = Enum.TextXAlignment.Center
+Logo.Parent = Title
+
 local TitleText = Instance.new("TextLabel")
-TitleText.Size = UDim2.new(1, -50, 1, 0)
-TitleText.Position = UDim2.new(0, 14, 0, 0)
+TitleText.Size = UDim2.new(1, -80, 1, 0)
+TitleText.Position = UDim2.new(0, 48, 0, 0)
 TitleText.BackgroundTransparency = 1
-TitleText.Text = "✦ BloxStrike ESP"
+TitleText.Text = "BloxStrike ESP"
 TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleText.Font = Enum.Font.GothamBold
-TitleText.TextSize = 16
+TitleText.TextSize = 17
 TitleText.TextXAlignment = Enum.TextXAlignment.Left
 TitleText.Parent = Title
 
--- КНОПКА ЗАКРЫТИЯ (X)
+-- КНОПКА ЗАКРЫТИЯ (КРЕСТИК ТЕКСТОМ)
 local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -38, 0.5, 0)
+CloseBtn.Size = UDim2.new(0, 34, 0, 34)
+CloseBtn.Position = UDim2.new(1, -40, 0.5, 0)
 CloseBtn.AnchorPoint = Vector2.new(0, 0.5)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 69, 58)
 CloseBtn.BorderSizePixel = 0
 CloseBtn.Text = "✕"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 16
+CloseBtn.TextSize = 18
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Parent = Title
 
@@ -378,7 +383,7 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ============================================
--- DRAGGABLE (ПЕРЕТАСКИВАНИЕ)
+-- DRAGGABLE
 -- ============================================
 local dragging = false
 local dragInput, mousePos, framePos
@@ -414,11 +419,11 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- ============================================
--- СКРОЛЛИНГ ДЛЯ НАСТРОЕК
+-- СКРОЛЛИНГ
 -- ============================================
 local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Size = UDim2.new(1, -12, 1, -52)
-ScrollFrame.Position = UDim2.new(0, 6, 0, 46)
+ScrollFrame.Size = UDim2.new(1, -14, 1, -54)
+ScrollFrame.Position = UDim2.new(0, 7, 0, 48)
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.BorderSizePixel = 0
 ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -428,16 +433,16 @@ ScrollFrame.ScrollBarImageTransparency = 0.2
 ScrollFrame.Parent = MainFrame
 
 local ScrollLayout = Instance.new("UIListLayout")
-ScrollLayout.Padding = UDim.new(0, 6)
+ScrollLayout.Padding = UDim.new(0, 8)
 ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ScrollLayout.Parent = ScrollFrame
 
 -- ============================================
--- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ-СВИТЧА
+-- ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ (БОЛЬШЕ РАЗМЕР)
 -- ============================================
 local function CreateToggle(parent, text, getter, setter)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -10, 0, 36)
+    frame.Size = UDim2.new(1, -10, 0, 40)
     frame.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
     frame.BackgroundTransparency = 0.2
     frame.BorderSizePixel = 0
@@ -447,32 +452,20 @@ local function CreateToggle(parent, text, getter, setter)
     fCorner.CornerRadius = UDim.new(0, 8)
     fCorner.Parent = frame
     
-    -- HOVER ЭФФЕКТ
-    frame.MouseEnter:Connect(function()
-        TweenService:Create(frame, TweenInfo.new(0.15), {
-            BackgroundTransparency = 0.05
-        }):Play()
-    end)
-    frame.MouseLeave:Connect(function()
-        TweenService:Create(frame, TweenInfo.new(0.15), {
-            BackgroundTransparency = 0.2
-        }):Play()
-    end)
-    
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(0.6, 0, 1, 0)
     label.Position = UDim2.new(0, 14, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = text
     label.TextColor3 = Color3.fromRGB(230, 230, 240)
-    label.TextSize = 13
+    label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = frame
     
     local toggleBtn = Instance.new("Frame")
-    toggleBtn.Size = UDim2.new(0, 44, 0, 24)
-    toggleBtn.Position = UDim2.new(1, -12, 0.5, -12)
+    toggleBtn.Size = UDim2.new(0, 46, 0, 24)
+    toggleBtn.Position = UDim2.new(1, -14, 0.5, -12)
     toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
     toggleBtn.BorderSizePixel = 0
     toggleBtn.Parent = frame
@@ -514,7 +507,7 @@ end
 -- ============================================
 local function CreateDropdown(parent, text, options, getter, setter)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -10, 0, 36)
+    frame.Size = UDim2.new(1, -10, 0, 40)
     frame.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
     frame.BackgroundTransparency = 0.2
     frame.BorderSizePixel = 0
@@ -526,24 +519,24 @@ local function CreateDropdown(parent, text, options, getter, setter)
     fCorner.Parent = frame
     
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.5, 0, 1, 0)
+    label.Size = UDim2.new(0.45, 0, 1, 0)
     label.Position = UDim2.new(0, 14, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = text
     label.TextColor3 = Color3.fromRGB(230, 230, 240)
-    label.TextSize = 13
+    label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = frame
     
     local dropdownBtn = Instance.new("TextButton")
-    dropdownBtn.Size = UDim2.new(0, 80, 0, 28)
-    dropdownBtn.Position = UDim2.new(1, -90, 0.5, -14)
+    dropdownBtn.Size = UDim2.new(0, 90, 0, 30)
+    dropdownBtn.Position = UDim2.new(1, -100, 0.5, -15)
     dropdownBtn.BackgroundColor3 = Color3.fromRGB(40, 35, 55)
     dropdownBtn.BorderSizePixel = 0
     dropdownBtn.Text = getter()
     dropdownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropdownBtn.TextSize = 12
+    dropdownBtn.TextSize = 13
     dropdownBtn.Font = Enum.Font.Gotham
     dropdownBtn.Parent = frame
     
@@ -552,18 +545,18 @@ local function CreateDropdown(parent, text, options, getter, setter)
     dCorner.Parent = dropdownBtn
     
     local arrow = Instance.new("TextLabel")
-    arrow.Size = UDim2.new(0, 20, 1, 0)
-    arrow.Position = UDim2.new(1, -22, 0, 0)
+    arrow.Size = UDim2.new(0, 22, 1, 0)
+    arrow.Position = UDim2.new(1, -24, 0, 0)
     arrow.BackgroundTransparency = 1
     arrow.Text = "▼"
     arrow.TextColor3 = Color3.fromRGB(180, 180, 200)
-    arrow.TextSize = 12
+    arrow.TextSize = 13
     arrow.Font = Enum.Font.GothamBold
     arrow.Parent = dropdownBtn
     
     local listFrame = Instance.new("Frame")
-    listFrame.Size = UDim2.new(0, 80, 0, 0)
-    listFrame.Position = UDim2.new(1, -90, 0, 36)
+    listFrame.Size = UDim2.new(0, 90, 0, 0)
+    listFrame.Position = UDim2.new(1, -100, 0, 40)
     listFrame.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
     listFrame.BorderSizePixel = 0
     listFrame.ClipsDescendants = true
@@ -578,22 +571,22 @@ local function CreateDropdown(parent, text, options, getter, setter)
     
     for _, option in ipairs(options) do
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 26)
+        btn.Size = UDim2.new(1, 0, 0, 28)
         btn.BackgroundColor3 = Color3.fromRGB(40, 35, 55)
         btn.BorderSizePixel = 0
         btn.Text = option
         btn.TextColor3 = Color3.fromRGB(220, 220, 230)
-        btn.TextSize = 12
+        btn.TextSize = 13
         btn.Font = Enum.Font.Gotham
         btn.Parent = listFrame
-        itemHeight = itemHeight + 26
+        itemHeight = itemHeight + 28
         
         btn.MouseButton1Click:Connect(function()
             setter(option)
             dropdownBtn.Text = option
             isOpen = false
-            listFrame.Size = UDim2.new(0, 80, 0, 0)
-            frame.Size = UDim2.new(1, -10, 0, 36)
+            listFrame.Size = UDim2.new(0, 90, 0, 0)
+            frame.Size = UDim2.new(1, -10, 0, 40)
             arrow.Text = "▼"
         end)
     end
@@ -601,12 +594,12 @@ local function CreateDropdown(parent, text, options, getter, setter)
     dropdownBtn.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         if isOpen then
-            listFrame.Size = UDim2.new(0, 80, 0, itemHeight)
-            frame.Size = UDim2.new(1, -10, 0, 36 + itemHeight)
+            listFrame.Size = UDim2.new(0, 90, 0, itemHeight)
+            frame.Size = UDim2.new(1, -10, 0, 40 + itemHeight)
             arrow.Text = "▲"
         else
-            listFrame.Size = UDim2.new(0, 80, 0, 0)
-            frame.Size = UDim2.new(1, -10, 0, 36)
+            listFrame.Size = UDim2.new(0, 90, 0, 0)
+            frame.Size = UDim2.new(1, -10, 0, 40)
             arrow.Text = "▼"
         end
     end)
@@ -619,7 +612,7 @@ end
 -- ============================================
 local function CreateSlider(parent, text, getter, setter, min, max)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -10, 0, 42)
+    frame.Size = UDim2.new(1, -10, 0, 46)
     frame.BackgroundColor3 = Color3.fromRGB(30, 28, 45)
     frame.BackgroundTransparency = 0.2
     frame.BorderSizePixel = 0
@@ -635,7 +628,7 @@ local function CreateSlider(parent, text, getter, setter, min, max)
     label.BackgroundTransparency = 1
     label.Text = text
     label.TextColor3 = Color3.fromRGB(230, 230, 240)
-    label.TextSize = 13
+    label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = frame
@@ -646,7 +639,7 @@ local function CreateSlider(parent, text, getter, setter, min, max)
     valLabel.BackgroundTransparency = 1
     valLabel.Text = tostring(getter())
     valLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
-    valLabel.TextSize = 13
+    valLabel.TextSize = 14
     valLabel.Font = Enum.Font.Gotham
     valLabel.TextXAlignment = Enum.TextXAlignment.Right
     valLabel.Parent = frame
@@ -713,9 +706,23 @@ local function CreateSlider(parent, text, getter, setter, min, max)
 end
 
 -- ============================================
+-- РАЗДЕЛИТЕЛЬ
+-- ============================================
+local function CreateSeparator(parent)
+    local sep = Instance.new("Frame")
+    sep.Size = UDim2.new(0.9, 0, 0, 1)
+    sep.Position = UDim2.new(0.05, 0, 0, 0)
+    sep.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    sep.BackgroundTransparency = 0.5
+    sep.BorderSizePixel = 0
+    sep.Parent = parent
+    return sep
+end
+
+-- ============================================
 -- СОЗДАЕМ НАСТРОЙКИ
 -- ============================================
--- Основные настройки
+-- Основные
 CreateToggle(ScrollFrame, "Enable ESP", 
     function() return settings.Enabled end, 
     function(v) ToggleESP(v) end
@@ -726,14 +733,7 @@ CreateToggle(ScrollFrame, "Show Teammates",
     function(v) settings.ShowTeam = v end
 )
 
--- Разделитель
-local sep = Instance.new("Frame")
-sep.Size = UDim2.new(0.9, 0, 0, 1)
-sep.Position = UDim2.new(0.05, 0, 0, 0)
-sep.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-sep.BackgroundTransparency = 0.5
-sep.BorderSizePixel = 0
-sep.Parent = ScrollFrame
+CreateSeparator(ScrollFrame)
 
 -- Отображение
 CreateToggle(ScrollFrame, "Show Name", 
@@ -751,14 +751,7 @@ CreateToggle(ScrollFrame, "Show Distance",
     function(v) settings.ShowDistance = v end
 )
 
--- Разделитель
-local sep2 = Instance.new("Frame")
-sep2.Size = UDim2.new(0.9, 0, 0, 1)
-sep2.Position = UDim2.new(0.05, 0, 0, 0)
-sep2.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-sep2.BackgroundTransparency = 0.5
-sep2.BorderSizePixel = 0
-sep2.Parent = ScrollFrame
+CreateSeparator(ScrollFrame)
 
 -- Внешний вид
 CreateSlider(ScrollFrame, "Box Thickness", 
@@ -783,10 +776,10 @@ task.wait(0.1)
 local height = 0
 for _, child in pairs(ScrollFrame:GetChildren()) do
     if child:IsA("Frame") then
-        height = height + child.Size.Y.Offset + 6
+        height = height + child.Size.Y.Offset + 8
     end
 end
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, height + 10)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, height + 20)
 
 -- ============================================
 -- F4 ДЛЯ ОТКРЫТИЯ/ЗАКРЫТИЯ
